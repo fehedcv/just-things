@@ -8,7 +8,7 @@ function App() {
     <div className="bg-(--color-charcoal)">
       <Navbar />
       <Hero />
-      <ScrollVelocity texts={[' Photography Automotive ',' Videography Production Shoots ']} 
+      <ScrollVelocity texts={['📸Photography Automotive📸','📸Videography Production Shoots📸']} 
       velocity={50}
       className="text-(--color-soft-grey)"/>
     </div>

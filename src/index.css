@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Dynalight&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Bungee+Outline&display=swap');
 @import "tailwindcss";
 
 /* === Nature-Luxury Theme Variables === */
@@ -18,4 +20,20 @@
   /* Typography */
   --font-heading: "Cormorant Garamond", serif;
   --font-body: "Manrope", sans-serif;
+}
+
+*{
+    font-family: "Roboto", sans-serif;
+
+}
+
+.dynalight-regular {
+  font-family: "Dynalight", cursive;
+  font-weight: 400;
+  font-style: normal;
+}
+.bungee-outline-regular {
+  font-family: "Bungee Outline", sans-serif;
+  font-weight: 400;
+  font-style: normal;
 }
