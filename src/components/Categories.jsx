@@ -18,7 +18,7 @@ const categories = [
     title: "Fashion & Editorial",
     subtitle: "Bold Aesthetics",
     description: "High-end fashion photography that speaks volumes. We focus on style.",
-    image: "https://images.unsplash.com/photo-1469334031218-e382a71b716b?q=80&w=1200&auto=format&fit=crop"
+    image: "https://aieditingprompt.in/wp-content/uploads/2025/09/output-3.jpg"
   },
   {
     id: 3,
