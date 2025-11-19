@@ -93,7 +93,7 @@ const RoelZoomOutHero = () => {
 
       <div className="absolute inset-0 z-30 flex flex-col pointer-events-none">
         <div ref={textWrapperRef} className="flex-1 flex flex-col items-center justify-center text-center px-4">
-           <h1 className="text-5xl md:text-7xl lg:text-[6rem] font-bold leading-[0.9] tracking-tighter uppercase mix-blend-difference">
+           <h1 className="text-5xl md:text-7xl lg:text-[4rem] font-bold leading-[0.9] tracking-tighter uppercase mix-blend-difference">
              Capturing The <br/>
              Pulse of Every <br/>
              <span className="text-transparent" style={{ WebkitTextStroke: '1px white' }}>Event</span>

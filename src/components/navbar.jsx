@@ -1,13 +1,16 @@
-import React, { forwardRef, useState, useEffect, useRef } from 'react';
+import React, { forwardRef, useState, useLayoutEffect, useRef } from 'react';
 import { ArrowRight, Smile, Menu, X } from 'lucide-react';
 import gsap from 'gsap';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
+
+gsap.registerPlugin(ScrollTrigger);
 
 const Navbar = forwardRef((props, ref) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [isScrolled, setIsScrolled] = useState(false);
-  const [scrollProgress, setScrollProgress] = useState(0);
   
-  // Refs for mobile menu animation
+  // Refs
+  const navContainerRef = useRef(null); // Ref for the Nav container
+  const progressBarRef = useRef(null);  // Ref for the Progress Bar
   const mobileMenuRef = useRef(null);
   const mobileLinksRef = useRef([]);
   const menuTimeline = useRef(null);
@@ -17,51 +20,73 @@ const Navbar = forwardRef((props, ref) => {
     setIsMenuOpen(!isMenuOpen);
   };
 
-  // Handle Scroll (Background Change & Progress Bar)
-  useEffect(() => {
-    const handleScroll = () => {
-      // 1. Change Background on Scroll
-      if (window.scrollY > 50) {
-        setIsScrolled(true);
-      } else {
-        setIsScrolled(false);
-      }
+  // --- ⚡ MAIN UPDATE: SMOOTH SCROLL SYNC ---
+  useLayoutEffect(() => {
+    const ctx = gsap.context(() => {
+      
+      // Create a ScrollTrigger for the whole page to sync Progress Bar & Background
+      ScrollTrigger.create({
+        trigger: document.documentElement,
+        start: "top top",
+        end: "bottom bottom",
+        scroller: window, // Uses Lenis scrolling context
+        onUpdate: (self) => {
+          // 1. Progress Bar Animation (Direct DOM update for max smoothness)
+          if (progressBarRef.current) {
+            gsap.set(progressBarRef.current, { 
+              scaleX: self.progress // Using scaleX is smoother than width
+            });
+          }
 
-      // 2. Calculate Scroll Progress
-      const totalHeight = document.documentElement.scrollHeight - window.innerHeight;
-      const progress = (window.scrollY / totalHeight) * 100;
-      setScrollProgress(progress);
-    };
+          // 2. Background Change Logic
+          if (self.scroll() > 50) {
+            gsap.to(navContainerRef.current, {
+              backgroundColor: "rgba(0, 0, 0, 0.9)",
+              borderBottomColor: "rgba(255, 255, 255, 0.1)",
+              paddingTop: "1rem", // 16px (py-4)
+              paddingBottom: "1rem",
+              duration: 0.3,
+              overwrite: true
+            });
+          } else {
+            gsap.to(navContainerRef.current, {
+              backgroundColor: "transparent",
+              borderBottomColor: "transparent",
+              paddingTop: "1.5rem", // 24px (py-6)
+              paddingBottom: "1.5rem",
+              duration: 0.3,
+              overwrite: true
+            });
+          }
+        }
+      });
 
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
+    });
+    return () => ctx.revert();
   }, []);
 
-  // GSAP Animation for Mobile Menu (Drawer Effect)
-  useEffect(() => {
-    const ctx = gsap.context(() => {
-      // Initialize timeline (paused initially)
-      menuTimeline.current = gsap.timeline({ paused: true });
 
+  // Mobile Menu Animation Setup (Same as before)
+  useLayoutEffect(() => {
+    const ctx = gsap.context(() => {
+      menuTimeline.current = gsap.timeline({ paused: true });
       menuTimeline.current
         .to(mobileMenuRef.current, {
           x: '0%',
           duration: 0.8,
-          ease: 'power4.inOut', // Extra smooth easing
+          ease: 'power4.inOut',
         })
         .fromTo(mobileLinksRef.current, 
           { y: 50, opacity: 0 },
           { y: 0, opacity: 1, duration: 0.5, stagger: 0.1, ease: 'power2.out' },
           "-=0.4"
         );
-
     });
-
     return () => ctx.revert();
   }, []);
 
   // Play/Reverse animation based on state
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (menuTimeline.current) {
       if (isMenuOpen) {
         menuTimeline.current.play();
@@ -76,19 +101,23 @@ const Navbar = forwardRef((props, ref) => {
   return (
     <>
       <nav 
-        ref={ref} 
-        className={`w-full px-6 md:px-12 py-6 flex items-center justify-between z-50 fixed top-0 left-0 transition-all duration-500 ${
-          isScrolled 
-            ? 'bg-black/70 backdrop-blur-md border-b border-white/10 py-4' 
-            : 'bg-transparent py-6'
-        }`}
+        ref={navContainerRef} 
+        // Removed dynamic classes for background, controlled by GSAP now
+        className="w-full px-6 md:px-12 py-6 flex items-center justify-between z-50 fixed top-0 left-0 transition-all duration-300"
       >
+        {/* --- SMOOTH PROGRESS BAR --- */}
+        {/* Added transform-origin-left so it scales from left to right */}
+        <div 
+            ref={progressBarRef}
+            className="absolute top-0 left-0 h-[3px] w-full bg-[#00D2BE] z-50 origin-left scale-x-0"
+        ></div>
+
         {/* Logo Section */}
         <div className="flex flex-col leading-none group cursor-pointer z-50 relative">
           <span className="text-white font-bold text-xl tracking-[0.2em]">Just things</span>
         </div>
 
-        {/* Desktop Links (Hidden on Mobile) */}
+        {/* Desktop Links */}
         <div className="hidden md:flex items-center gap-10 text-sm font-medium text-gray-400">
           {navLinks.map((item) => (
             <a 
@@ -97,7 +126,6 @@ const Navbar = forwardRef((props, ref) => {
               className="relative group overflow-hidden text-gray-400 hover:text-white transition-colors pb-1"
             >
               {item}
-              {/* Smooth Underline Animation */}
               <span className="absolute bottom-0 left-0 w-0 h-[2px] bg-[#00D2BE] transition-all duration-300 ease-out group-hover:w-full"></span>
             </a>
           ))}
@@ -113,7 +141,6 @@ const Navbar = forwardRef((props, ref) => {
             <ArrowRight size={18} className="-rotate-45" />
           </button>
 
-          {/* Mobile Menu Toggle Button */}
           <button 
             onClick={toggleMenu} 
             className="md:hidden text-white hover:text-[#00D2BE] transition-colors z-50"
@@ -122,22 +149,14 @@ const Navbar = forwardRef((props, ref) => {
           </button>
         </div>
 
-        {/* --- SCROLL PROGRESS BAR --- */}
-        <div 
-            className="absolute bottom-0 left-0 h-[2px] bg-[#00D2BE] transition-all duration-100 ease-out"
-            style={{ width: `${scrollProgress}%` }}
-        ></div>
-
       </nav>
 
-      {/* --- MOBILE MENU DRAWER --- */}
+      {/* --- MOBILE MENU DRAWER (Same as before) --- */}
       <div 
         ref={mobileMenuRef}
         className="fixed inset-0 bg-[#0A0A0A] z-40 flex flex-col items-center justify-center translate-x-full will-change-transform"
       >
-        {/* Decorative Background Element */}
         <div className="absolute top-0 right-0 w-[300px] h-[300px] bg-[#00D2BE] blur-[150px] opacity-10 pointer-events-none"></div>
-
         <div className="flex flex-col items-center gap-8 text-4xl font-bold text-white uppercase tracking-widest z-10">
           {navLinks.map((item, index) => (
             <a 
@@ -148,12 +167,10 @@ const Navbar = forwardRef((props, ref) => {
               onClick={() => setIsMenuOpen(false)}
             >
               {item}
-               {/* Underline for Mobile too */}
                <span className="absolute -bottom-2 left-1/2 -translate-x-1/2 w-0 h-[2px] bg-[#00D2BE] transition-all duration-300 group-hover:w-full"></span>
             </a>
           ))}
            
-           {/* Mobile Contact Link */}
            <div ref={el => mobileLinksRef.current[navLinks.length] = el}>
              <a 
                 href="#" 
