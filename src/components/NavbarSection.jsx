@@ -123,7 +123,7 @@ const Navbar = forwardRef((props, ref) => {
             <a 
               key={item} 
               //if item is "Home" then href="/" else href={item}
-              href={item === 'Home' ? '/' : `/${item}`}
+              href={item === 'Home' ? '/' : `/#${item}`}
               className="relative group overflow-hidden text-gray-400 hover:text-white transition-colors pb-1"
             >
               {item}
@@ -162,7 +162,7 @@ const Navbar = forwardRef((props, ref) => {
           {navLinks.map((item, index) => (
             <a 
               key={item} 
-              href="#" 
+              href={"#"+item} 
               ref={el => mobileLinksRef.current[index] = el}
               className="relative group hover:text-[#00D2BE] transition-colors"
               onClick={() => setIsMenuOpen(false)}
