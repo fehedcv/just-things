@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useEffect } from 'react'
 import HeroSection from '../components/HeroSection'
 import CategorySection from '../components/Categories'
 import FeaturedProjects from '../components/FeaturedProjects'
@@ -11,18 +11,22 @@ import CallToAction from '../components/CallToAction'
 
 
 const Home = () => {
+  useEffect(() => {
+    // (x-coord, y-coord)
+    window.scrollTo(0, 0);
+  }, []);
   return (
     <div className="w-full bg-[#0A0A0A]">
-        <HeroSection/>
-        <CategorySection />
-        <FeaturedProjects />
-        <AboutUs/>
-        <ServicesSection />
-        <OnePhotoSection />
-        <TestimonialsSection/>
-        <InstagramFeed />
-        <CallToAction />
-     
+      <HeroSection />
+      <CategorySection />
+      <FeaturedProjects />
+      <AboutUs />
+      <ServicesSection />
+      <OnePhotoSection />
+      <TestimonialsSection />
+      <InstagramFeed />
+      <CallToAction />
+
     </div>
   )
 }

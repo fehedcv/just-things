@@ -1,7 +1,8 @@
-import React, { useLayoutEffect } from "react";
+import React, { useLayoutEffect, useEffect } from "react";
 import ScrollExpandMedia from "../components/ScrollExpandMedia";
 import PortfolioScroll from "../components/PortfolioScroll";
 import { FullScreenScrollFX } from "../components/FullScreenGallery";
+
 // Data for the DemoOne / FullScreenScrollFX component
 const sections = [
   {
@@ -84,6 +85,12 @@ const sections = [
 
 
 export default function Portfolio() {
+  useEffect(() => {
+    // (x-coord, y-coord)
+    setTimeout(() => {
+      window.scrollTo(0, 0);
+    }, 0);
+  }, []);
   return (
     <div className="bg-black min-h-screen w-full">
       {/* 1. Hero / Expand Media Section */}

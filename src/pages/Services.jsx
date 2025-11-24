@@ -1,7 +1,8 @@
-import React, { useRef, useState, useLayoutEffect } from "react";
+import React, { useRef, useState, useLayoutEffect, useEffect } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useGSAP } from "@gsap/react";
+import * as THREE from "three";
 import {
   Camera,
   Car,
@@ -61,8 +62,131 @@ const SERVICES_DATA = [
     icon: <Clapperboard size={24} />,
     color: "#8b5cf6", // Violet
     items: ["Perfumes", "Cosmetics", "Jewelry", "Commercials"]
-  }
+  },
 ];
+
+// --- THREE.JS BACKGROUND ---
+const ThreeBackground = () => {
+  const mountRef = useRef(null);
+
+  useEffect(() => {
+    if (!mountRef.current) return;
+
+    // SCENE SETUP
+    const scene = new THREE.Scene();
+    // Fog for depth
+    scene.fog = new THREE.FogExp2(0x050505, 0.002);
+
+    const camera = new THREE.PerspectiveCamera(
+      75,
+      window.innerWidth / window.innerHeight,
+      0.1,
+      1000
+    );
+    camera.position.z = 50;
+
+    const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    mountRef.current.appendChild(renderer.domElement);
+
+    // --- STARS ---
+    const starsGeometry = new THREE.BufferGeometry();
+    const starsCount = 2000;
+    const posArray = new Float32Array(starsCount * 3);
+
+    for (let i = 0; i < starsCount * 3; i++) {
+      posArray[i] = (Math.random() - 0.5) * 200; // Spread stars
+    }
+
+    starsGeometry.setAttribute('position', new THREE.BufferAttribute(posArray, 3));
+    const starsMaterial = new THREE.PointsMaterial({
+      size: 0.15,
+      color: 0xffffff,
+      transparent: true,
+      opacity: 0.8,
+    });
+    const starsMesh = new THREE.Points(starsGeometry, starsMaterial);
+    scene.add(starsMesh);
+
+    // --- PLANETS ---
+    const planets = [];
+    const planetData = [
+      { color: 0xec4899, size: 2, dist: 30, speed: 0.002 }, // Pink
+      { color: 0x06b6d4, size: 3, dist: 45, speed: 0.0015 }, // Cyan
+      { color: 0xf59e0b, size: 1.5, dist: 20, speed: 0.003 }, // Amber
+      { color: 0xef4444, size: 4, dist: 60, speed: 0.001 }, // Red
+      { color: 0x8b5cf6, size: 2.5, dist: 35, speed: 0.0025 }, // Violet
+    ];
+
+    planetData.forEach((data) => {
+      const geometry = new THREE.SphereGeometry(data.size, 32, 32);
+      const material = new THREE.MeshBasicMaterial({ color: data.color, wireframe: true });
+      const planet = new THREE.Mesh(geometry, material);
+
+      // Random initial angle
+      planet.userData = {
+        angle: Math.random() * Math.PI * 2,
+        distance: data.dist,
+        speed: data.speed
+      };
+
+      scene.add(planet);
+      planets.push(planet);
+    });
+
+    // ANIMATION LOOP
+    const animate = () => {
+      requestAnimationFrame(animate);
+
+      // Rotate stars slowly
+      starsMesh.rotation.y += 0.0005;
+      starsMesh.rotation.x += 0.0002;
+
+      // Orbit planets
+      planets.forEach((planet) => {
+        planet.userData.angle += planet.userData.speed;
+        planet.position.x = Math.cos(planet.userData.angle) * planet.userData.distance;
+        planet.position.z = Math.sin(planet.userData.angle) * planet.userData.distance;
+        planet.position.y = Math.sin(planet.userData.angle * 0.5) * (planet.userData.distance * 0.2); // Slight wave
+        planet.rotation.y += 0.01;
+      });
+
+      renderer.render(scene, camera);
+    };
+
+    animate();
+
+    // RESIZE HANDLER
+    const handleResize = () => {
+      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+    };
+
+    window.addEventListener('resize', handleResize);
+
+    return () => {
+      window.removeEventListener('resize', handleResize);
+      if (mountRef.current && renderer.domElement) {
+        mountRef.current.removeChild(renderer.domElement);
+      }
+      // Cleanup Three.js resources
+      //geometry.dispose();
+      //material.dispose();
+      starsGeometry.dispose();
+      starsMaterial.dispose();
+      planets.forEach(p => {
+        p.geometry.dispose();
+        p.material.dispose();
+      });
+      renderer.dispose();
+    };
+  }, []);
+
+  return <div ref={mountRef} className="absolute inset-0 z-0 pointer-events-none" />;
+};
+
 
 // --- POPUP CARD ---
 const ServicePopup = ({ activeService, onClose }) => {
@@ -204,8 +328,8 @@ const OrbitRing = ({ items, radius, duration, reverse, onSelect }) => {
               <style jsx>{`
                 .group:hover .w-16 {
                   box-shadow: 0 0 30px var(--color);
-                }
-              `}</style>
+                  }
+                  `}</style>
             </div>
           </div>
         );
@@ -221,6 +345,13 @@ const Service = () => {
   const bgTextRef = useRef(null);
   const orbitContainerRef = useRef(null);
 
+  useEffect(() => {
+    // (x-coord, y-coord)
+    setTimeout(() => {
+      window.scrollTo(0, 0);
+    }, 0);
+  }, []);
+
   const [activeService, setActiveService] = useState(null);
 
   const innerItems = SERVICES_DATA.filter(i => i.ring === "inner");
@@ -231,7 +362,7 @@ const Service = () => {
       scrollTrigger: {
         trigger: wrapperRef.current,
         start: "top top",
-        end: "+=200%",
+        end: "+=150%", // Slightly increased to give more room for the faster animation to feel smooth
         scrub: 1,
         pin: true,
       },
@@ -241,7 +372,7 @@ const Service = () => {
     tl.to(cameraRef.current, {
       scale: 50,
       rotation: 180,
-      duration: 2,
+      duration: 1.5, // Reduced from 2
       ease: "power2.inOut",
       transformOrigin: "center center",
     })
@@ -255,10 +386,11 @@ const Service = () => {
       .to(cameraRef.current, {
         autoAlpha: 0,
         duration: 0.1
-      }, ">-0.5")
+      }, ">-0.5") // Starts at 1.0s
       .fromTo(orbitContainerRef.current,
         { scale: 0.5, autoAlpha: 0 },
-        { scale: 1, autoAlpha: 1, duration: 1, ease: "power2.out" }
+        { scale: 1, autoAlpha: 1, duration: 1, ease: "power2.out" },
+        "<" // Starts at 1.0s (same as hide)
       );
 
   }, { scope: wrapperRef });
@@ -290,15 +422,18 @@ const Service = () => {
         }
       `}</style>
 
+      {/* THREE.JS BACKGROUND */}
+      <ThreeBackground />
+
       {/* BACKGROUND TEXT */}
-      <div ref={bgTextRef} className="absolute inset-0 flex items-center justify-center pointer-events-none select-none">
+      <div ref={bgTextRef} className="absolute inset-0 flex items-center justify-center pointer-events-none select-none z-10">
         <h1 className="text-[15vw] font-black text-white/5 uppercase tracking-tighter leading-[0.8] text-center">
           VYNX<br />WEBWORKS
         </h1>
       </div>
 
       {/* CAMERA LENS */}
-      <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-10">
+      <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-20">
         <img
           ref={cameraRef}
           src={lensImg || fallbackImg}
@@ -310,7 +445,7 @@ const Service = () => {
       {/* ORBIT SYSTEM */}
       <div
         ref={orbitContainerRef}
-        className="orbit-system relative w-full h-full flex items-center justify-center opacity-0 z-20"
+        className="orbit-system relative w-full h-full flex items-center justify-center opacity-0 z-30"
       >
         {/* Modal */}
         <ServicePopup

@@ -1,5 +1,5 @@
 // src/pages/PhotographerAboutPage.jsx
-import React, { useLayoutEffect, useRef } from 'react';
+import React, { useLayoutEffect, useRef, useEffect } from 'react';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 
@@ -12,6 +12,11 @@ const AboutPage = () => {
     const bioRef = useRef(null);
     const focusAreasRef = useRef(null);
     const timelineRef = useRef(null);
+
+    useEffect(() => {
+        // (x-coord, y-coord)
+        window.scrollTo(0, 0);
+    }, []);
 
     useLayoutEffect(() => {
         let ctx = gsap.context(() => {
