@@ -1,4 +1,4 @@
-import React, { useRef, useState, useLayoutEffect, useEffect } from "react";
+import React, { useRef, useState, useEffect } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useGSAP } from "@gsap/react";
@@ -13,7 +13,9 @@ import {
 } from "lucide-react";
 
 // --- IMAGE ---
-import lensImg from "/cam_img.png";
+// Make sure this path is correct in your project
+import lensImg from "/cam_img.png"; 
+
 // Fallback if local image is missing
 const fallbackImg = "https://images.unsplash.com/photo-1516035069371-29a1b244cc32?q=80&w=1000&auto=format&fit=crop";
 
@@ -65,17 +67,16 @@ const SERVICES_DATA = [
   },
 ];
 
-// --- THREE.JS BACKGROUND ---
+// --- THREE.JS BACKGROUND (MANY RANDOM FLOATING PLANETS) ---
 const ThreeBackground = () => {
   const mountRef = useRef(null);
 
   useEffect(() => {
     if (!mountRef.current) return;
 
-    // SCENE SETUP
+    // 1. SCENE SETUP
     const scene = new THREE.Scene();
-    // Fog for depth
-    scene.fog = new THREE.FogExp2(0x050505, 0.002);
+    scene.fog = new THREE.FogExp2(0x050505, 0.002); // Deep space fog
 
     const camera = new THREE.PerspectiveCamera(
       75,
@@ -83,73 +84,134 @@ const ThreeBackground = () => {
       0.1,
       1000
     );
-    camera.position.z = 50;
+    camera.position.z = 60; // Pulled back to see more planets
 
     const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
     renderer.setSize(window.innerWidth, window.innerHeight);
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.shadowMap.enabled = true;
     mountRef.current.appendChild(renderer.domElement);
 
-    // --- STARS ---
+    // 2. LIGHTING
+    const ambientLight = new THREE.AmbientLight(0xffffff, 0.3); 
+    scene.add(ambientLight);
+
+    const sunLight = new THREE.PointLight(0xffffff, 2, 200);
+    sunLight.position.set(30, 30, 30);
+    scene.add(sunLight);
+
+    const rimLight = new THREE.DirectionalLight(0x4f46e5, 1.5); // Cool blue rim
+    rimLight.position.set(-20, 10, -20);
+    scene.add(rimLight);
+
+    const fillLight = new THREE.DirectionalLight(0xff0066, 0.5); // Pinkish fill
+    fillLight.position.set(20, -20, -10);
+    scene.add(fillLight);
+
+
+    // 3. TEXTURE LIBRARY
+    const textureLoader = new THREE.TextureLoader();
+    
+    // High-quality abstract textures that look like planets
+    const planetTextures = [
+        textureLoader.load("https://images.unsplash.com/photo-1614730341194-75c60740a071?q=80&w=500&auto=format&fit=crop"), // Grey Rock (Moon)
+        textureLoader.load("https://images.unsplash.com/photo-1618557219665-d05545e88e2c?q=80&w=500&auto=format&fit=crop"), // Abstract Blue (Ice)
+        textureLoader.load("https://images.unsplash.com/photo-1550684848-fac1c5b4e853?q=80&w=500&auto=format&fit=crop"), // Dark Magma
+        textureLoader.load("https://images.unsplash.com/photo-1605806616949-1e87b487bc2a?q=80&w=500&auto=format&fit=crop"), // Orange/Red (Mars)
+        textureLoader.load("https://images.unsplash.com/photo-1518640467707-6811f4a6ab73?q=80&w=500&auto=format&fit=crop"), // White Marble (Gas Giant)
+        textureLoader.load("https://images.unsplash.com/photo-1511185307590-3c29c11275ca?q=80&w=500&auto=format&fit=crop"), // Rusty Iron
+    ];
+
+    // 4. STARS (Background Dust)
     const starsGeometry = new THREE.BufferGeometry();
-    const starsCount = 2000;
+    const starsCount = 3000;
     const posArray = new Float32Array(starsCount * 3);
-
     for (let i = 0; i < starsCount * 3; i++) {
-      posArray[i] = (Math.random() - 0.5) * 200; // Spread stars
+      posArray[i] = (Math.random() - 0.5) * 300; // Wide spread
     }
-
     starsGeometry.setAttribute('position', new THREE.BufferAttribute(posArray, 3));
     const starsMaterial = new THREE.PointsMaterial({
-      size: 0.15,
+      size: 0.1,
       color: 0xffffff,
       transparent: true,
-      opacity: 0.8,
+      opacity: 0.6,
     });
     const starsMesh = new THREE.Points(starsGeometry, starsMaterial);
     scene.add(starsMesh);
 
-    // --- PLANETS ---
+
+    // 5. GENERATE MANY PLANETS ("GLOBS")
     const planets = [];
-    const planetData = [
-      { color: 0xec4899, size: 2, dist: 30, speed: 0.002 }, // Pink
-      { color: 0x06b6d4, size: 3, dist: 45, speed: 0.0015 }, // Cyan
-      { color: 0xf59e0b, size: 1.5, dist: 20, speed: 0.003 }, // Amber
-      { color: 0xef4444, size: 4, dist: 60, speed: 0.001 }, // Red
-      { color: 0x8b5cf6, size: 2.5, dist: 35, speed: 0.0025 }, // Violet
-    ];
+    const planetCount = 35; // Number of floating planets
 
-    planetData.forEach((data) => {
-      const geometry = new THREE.SphereGeometry(data.size, 32, 32);
-      const material = new THREE.MeshBasicMaterial({ color: data.color, wireframe: true });
-      const planet = new THREE.Mesh(geometry, material);
+    // Shared Geometry for performance, but scaled individually
+    // 64x64 segments for perfectly round shape
+    const baseGeometry = new THREE.SphereGeometry(1, 64, 64); 
 
-      // Random initial angle
-      planet.userData = {
-        angle: Math.random() * Math.PI * 2,
-        distance: data.dist,
-        speed: data.speed
-      };
+    for(let i=0; i<planetCount; i++) {
+        const texIndex = Math.floor(Math.random() * planetTextures.length);
+        const radius = Math.random() * 3 + 0.5; // Size between 0.5 and 3.5
 
-      scene.add(planet);
-      planets.push(planet);
-    });
+        const material = new THREE.MeshStandardMaterial({
+            map: planetTextures[texIndex],
+            bumpMap: planetTextures[texIndex],
+            bumpScale: 0.2,
+            roughness: 0.6,
+            metalness: 0.2,
+        });
 
-    // ANIMATION LOOP
+        const planet = new THREE.Mesh(baseGeometry, material);
+        
+        // Scale mesh to random radius
+        planet.scale.set(radius, radius, radius);
+
+        // Random Position
+        planet.position.set(
+            (Math.random() - 0.5) * 120, // X: -60 to 60
+            (Math.random() - 0.5) * 80,  // Y: -40 to 40
+            (Math.random() - 0.5) * 80 - 10 // Z: -50 to 30 (mostly background)
+        );
+
+        // Movement Data
+        planet.userData = {
+            rotationSpeed: (Math.random() - 0.5) * 0.02,
+            floatSpeed: Math.random() * 0.01 + 0.002,
+            floatOffset: Math.random() * Math.PI * 2,
+            driftX: (Math.random() - 0.5) * 0.02,
+            driftY: (Math.random() - 0.5) * 0.02,
+        };
+
+        scene.add(planet);
+        planets.push(planet);
+    }
+
+    // 6. ANIMATION LOOP
     const animate = () => {
       requestAnimationFrame(animate);
 
       // Rotate stars slowly
-      starsMesh.rotation.y += 0.0005;
-      starsMesh.rotation.x += 0.0002;
+      starsMesh.rotation.y += 0.0003;
 
-      // Orbit planets
+      // Animate Planets
       planets.forEach((planet) => {
-        planet.userData.angle += planet.userData.speed;
-        planet.position.x = Math.cos(planet.userData.angle) * planet.userData.distance;
-        planet.position.z = Math.sin(planet.userData.angle) * planet.userData.distance;
-        planet.position.y = Math.sin(planet.userData.angle * 0.5) * (planet.userData.distance * 0.2); // Slight wave
-        planet.rotation.y += 0.01;
+        // 1. Self Rotation
+        planet.rotation.y += planet.userData.rotationSpeed;
+        planet.rotation.x += planet.userData.rotationSpeed * 0.5;
+
+        // 2. Drift Movement
+        planet.position.x += planet.userData.driftX;
+        planet.position.y += planet.userData.driftY;
+
+        // 3. Floating Effect (Sine wave on Y)
+        // We add a tiny sine wave on top of the linear drift for "weightlessness"
+        planet.position.y += Math.sin(Date.now() * 0.001 + planet.userData.floatOffset) * 0.01;
+
+        // 4. Boundary Check (Screen Wrapping)
+        // If it goes too far right, move to left, etc.
+        if (planet.position.x > 70) planet.position.x = -70;
+        if (planet.position.x < -70) planet.position.x = 70;
+        if (planet.position.y > 50) planet.position.y = -50;
+        if (planet.position.y < -50) planet.position.y = 50;
       });
 
       renderer.render(scene, camera);
@@ -171,15 +233,11 @@ const ThreeBackground = () => {
       if (mountRef.current && renderer.domElement) {
         mountRef.current.removeChild(renderer.domElement);
       }
-      // Cleanup Three.js resources
-      //geometry.dispose();
-      //material.dispose();
       starsGeometry.dispose();
       starsMaterial.dispose();
-      planets.forEach(p => {
-        p.geometry.dispose();
-        p.material.dispose();
-      });
+      baseGeometry.dispose();
+      planets.forEach(p => p.material.dispose());
+      planetTextures.forEach(t => t.dispose());
       renderer.dispose();
     };
   }, []);
@@ -274,17 +332,19 @@ const ServicePopup = ({ activeService, onClose }) => {
   );
 };
 
-// --- ORBIT RING ---
+// --- ORBIT RING (UPDATED: More visible border) ---
 const OrbitRing = ({ items, radius, duration, reverse, onSelect }) => {
   return (
     <div
-      className="orbit-ring-container absolute rounded-full border border-dashed border-white/10 flex items-center justify-center pointer-events-none"
+      className="orbit-ring-container absolute rounded-full border border-dashed border-white/30 flex items-center justify-center pointer-events-none"
       style={{
         width: radius * 2,
         height: radius * 2,
         "--duration": `${duration}s`,
         "--direction": reverse ? 'reverse' : 'normal',
-        "--counter-direction": reverse ? 'normal' : 'reverse'
+        "--counter-direction": reverse ? 'normal' : 'reverse',
+        // Added a subtle shadow to make lines pop
+        boxShadow: '0 0 15px rgba(255,255,255,0.05)' 
       }}
     >
       {items.map((item, index) => {
@@ -428,7 +488,7 @@ const Service = () => {
       {/* BACKGROUND TEXT */}
       <div ref={bgTextRef} className="absolute inset-0 flex items-center justify-center pointer-events-none select-none z-10">
         <h1 className="text-[15vw] font-black text-white/5 uppercase tracking-tighter leading-[0.8] text-center">
-          VYNX<br />WEBWORKS
+          OUR<br />SERVICES
         </h1>
       </div>
 
