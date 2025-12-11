@@ -1,135 +1,230 @@
-import React, { useLayoutEffect, useEffect } from "react";
-import ScrollExpandMedia from "../components/ScrollExpandMedia";
-import PortfolioScroll from "../components/PortfolioScroll";
-import { FullScreenScrollFX } from "../components/FullScreenGallery";
+import React, { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { ArrowUpRight, X, Tag } from "lucide-react";
 
-// Data for the DemoOne / FullScreenScrollFX component
-const sections = [
-  {
-    background: "https://images.unsplash.com/photo-1492684223066-81342ee5ff30?auto=format&fit=crop&w=1600",
-    leftLabel: "Intro",
-    title: "Welcome",
-    rightLabel: "01"
-  },
-  {
-    background: "https://images.unsplash.com/photo-1500917293891-ef795e70e1f6?auto=format&fit=crop&w=1600",
-    leftLabel: "Gallery",
-    rightLabel: "02",
-    title: "Ignored Title",
-    carouselData: [
-      { text: "Whispers of Radiance", img: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=800" },
-      { text: "Ethereal Moments", img: "https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=800" },
-      { text: "Silent Beauty", img: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=800" }
-    ]
-  },
-
-  // ---------------------------
-  // ⭐ NEW SECTION 03 — Cinematic
-  // ---------------------------
-  {
-    background: "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=1600",
-    leftLabel: "Cinematic",
-    title: "Visual Stories",
-    rightLabel: "03"
-  },
-
-  // ---------------------------
-  // ⭐ NEW SECTION 04 — Portrait Carousel
-  // ---------------------------
-  {
-    background: "https://images.unsplash.com/photo-1529626455594-4ff0802cfb7e?auto=format&fit=crop&w=1600",
-    leftLabel: "Portraits",
-    rightLabel: "04",
-    carouselData: [
-      { text: "Soft Glow", img: "https://images.unsplash.com/photo-1529626455594-4ff0802cfb7e?auto=format&fit=crop&w=800" },
-      { text: "Dreamlight", img: "https://images.unsplash.com/photo-1500048993959-d6e8c6449e2d?auto=format&fit=crop&w=800" },
-      { text: "Golden Hour", img: "https://images.unsplash.com/photo-1520975918319-6c5903ed6ffd?auto=format&fit=crop&w=800" }
-    ]
-  },
-
-  // ---------------------------
-  // ⭐ NEW SECTION 05 — Nature
-  // ---------------------------
-  {
-    background: "https://images.unsplash.com/photo-1501785888041-af3ef285b470?auto=format&fit=crop&w=1600",
-    leftLabel: "Nature",
-    title: "Serenity in Frames",
-    rightLabel: "05"
-  },
-
-  // ---------------------------
-  // ⭐ NEW SECTION 06 — Automotive Carousel
-  // ---------------------------
-  {
-    background: "https://images.unsplash.com/photo-1502877338535-766e1452684a?auto=format&fit=crop&w=1600",
-    leftLabel: "Automotive",
-    rightLabel: "06",
-    carouselData: [
-      { text: "Speed & Motion", img: "https://images.unsplash.com/photo-1502877338535-766e1452684a?auto=format&fit=crop&w=800" },
-      { text: "Chrome Dreams", img: "https://images.unsplash.com/photo-1518558400712-1824ac51eaa6?auto=format&fit=crop&w=800" },
-      { text: "Precision Lines", img: "https://images.unsplash.com/photo-1549921296-3ec93abae235?auto=format&fit=crop&w=800" }
-    ]
-  },
-
-  // ---------------------------
-  // ⭐ NEW SECTION 07 — Finale
-  // ---------------------------
-  {
-    background: "https://images.unsplash.com/photo-1496307042754-b4aa456c4a2d?auto=format&fit=crop&w=1600",
-    leftLabel: "Contact",
-    title: "Let’s Create Together",
-    rightLabel: "07"
-  }
+// --- DATA ---
+const allProjects = [
+  { id: 1, src: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=800", title: "Vogue Edit", category: "Fashion", desc: "A high-contrast editorial exploring the duality of modern fashion. Shot on 35mm film for texture." },
+  { id: 2, src: "https://images.unsplash.com/photo-1470058869958-2a77ade41c02?q=80&w=800", title: "Raw Nature", category: "Nature", desc: "Capturing the untouched silence of the northern forests. No filters, just raw light." },
+  { id: 3, src: "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?q=80&w=800", title: "Concrete Dreams", category: "Architecture", desc: "A study of brutalist architecture and how light interacts with concrete surfaces." },
+  { id: 4, src: "https://images.unsplash.com/photo-1517841905240-472988babdf9?q=80&w=800", title: "Silent Noise", category: "Fashion", desc: "Minimalist fashion shoot focusing on fabric movement and emotion." },
+  { id: 5, src: "https://images.unsplash.com/photo-1492691527719-9d1e07e534b4?q=80&w=800", title: "Street Life", category: "Urban", desc: "The chaotic beauty of downtown Tokyo at midnight." },
+  { id: 6, src: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?q=80&w=800", title: "The Gaze", category: "Portrait", desc: "Intimate studio portraits that look into the soul of the subject." },
+  { id: 7, src: "https://images.unsplash.com/photo-1500917293891-ef795e70e1f6?q=80&w=800", title: "High Contrast", category: "Fashion", desc: "Black and white editorial focusing on silhouette and form." },
+  { id: 8, src: "https://images.unsplash.com/photo-1486325212027-8081e485255e?q=80&w=800", title: "Structure", category: "Architecture", desc: "Lines, angles, and the geometry of modern skylines." },
+  { id: 9, src: "https://images.unsplash.com/photo-1502082553048-f009c37129b9?q=80&w=800", title: "Deep Forest", category: "Nature", desc: "A misty morning in the evergreen woods." },
 ];
 
+const categories = ["All", "Fashion", "Nature", "Architecture", "Urban", "Portrait"];
 
+const FilterableGallery = () => {
+  const [activeCategory, setActiveCategory] = useState("All");
+  const [selectedProject, setSelectedProject] = useState(null);
 
-export default function Portfolio() {
-  useEffect(() => {
-    // (x-coord, y-coord)
-    setTimeout(() => {
-      window.scrollTo(0, 0);
-    }, 0);
-  }, []);
+  const filteredProjects = activeCategory === "All" 
+    ? allProjects 
+    : allProjects.filter(item => item.category === activeCategory);
+
   return (
-    <div className="bg-black min-h-screen w-full">
-      {/* 1. Hero / Expand Media Section */}
-      <div>
-        <ScrollExpandMedia
-          mediaType="video"
-          // Using a generic background video or placeholder
-          mediaSrc="https://videos.pexels.com/video-files/3129671/3129671-uhd_2560_1440_30fps.mp4"
-          posterSrc="https://images.unsplash.com/photo-1475924156734-496f6cac6ec1?auto=format&fit=crop&w=1920&q=80"
-          bgImageSrc="https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&w=1920&q=80"
-          title="Infinite Horizon"
-          date="EST 2025"
-          scrollToExpand="Scroll to Dive In"
-          textBlend={true}
-        >
-          {/* Content appearing after the video scroll finishes */}
-          <div className="space-y-6">
-            <h3 className="text-3xl font-bold text-white">The Beginning</h3>
-            <p>
-              We craft digital experiences that transcend the ordinary. By merging
-              cutting-edge technology with immersive design, we build worlds that
-              captivate and inspire.
-            </p>
-            <p>
-              Continue scrolling to explore our selected works and core services.
-            </p>
+    <section className="bg-[#2F3E2F] min-h-screen py-20 px-4 md:px-12 w-full text-[#E8E6E0]">
+      
+      {/* --- HEADER & FILTERS --- */}
+      <div className="flex flex-col md:flex-row md:items-end justify-between mb-16 gap-8">
+         <div>
+            <span className="text-[#A3B18A] uppercase tracking-[0.3em] text-xs font-bold block mb-4">Archive</span>
+            <h2 className="text-4xl md:text-7xl font-serif leading-[0.9]">
+               Curated <br/> <span className="italic text-[#A3B18A]">Works</span>
+            </h2>
+         </div>
+
+         <div className="flex flex-wrap gap-x-6 gap-y-3">
+            {categories.map((cat) => (
+               <button 
+                  key={cat}
+                  onClick={() => setActiveCategory(cat)}
+                  className="relative group pb-1"
+               >
+                  <span className={`text-xs md:text-base tracking-widest uppercase font-bold transition-colors duration-300 ${activeCategory === cat ? 'text-[#A3B18A]' : 'text-[#E8E6E0]/50 hover:text-[#E8E6E0]'}`}>
+                     {cat}
+                  </span>
+                  {activeCategory === cat && (
+                     <motion.div layoutId="activeFilter" className="absolute bottom-0 left-0 w-full h-[2px] bg-[#A3B18A]" />
+                  )}
+               </button>
+            ))}
+         </div>
+      </div>
+
+      {/* --- GALLERY GRID --- */}
+      <motion.div layout className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+         <AnimatePresence>
+            {filteredProjects.map((project) => (
+               <GalleryCard 
+                  key={project.id} 
+                  data={project} 
+                  onClick={() => setSelectedProject(project)} 
+               />
+            ))}
+         </AnimatePresence>
+      </motion.div>
+
+      {/* --- EXPANDED MODAL POPUP --- */}
+      <AnimatePresence>
+        {selectedProject && (
+           <ProjectModal 
+              data={selectedProject} 
+              onClose={() => setSelectedProject(null)} 
+           />
+        )}
+      </AnimatePresence>
+
+    </section>
+  );
+};
+
+// --- GRID CARD ---
+const GalleryCard = ({ data, onClick }) => {
+  return (
+    <motion.div
+      layoutId={`card-${data.id}`}
+      initial={{ opacity: 0, scale: 0.9 }}
+      animate={{ opacity: 1, scale: 1 }}
+      exit={{ opacity: 0, scale: 0.9 }}
+      transition={{ duration: 0.5 }}
+      onClick={onClick}
+      className="group cursor-pointer"
+    >
+       {/* Image */}
+       <div className="relative overflow-hidden rounded-[4px] mb-4 bg-[#1a241a] aspect-[4/5]">
+          <motion.img 
+             layoutId={`img-${data.id}`} 
+             src={data.src} 
+             alt={data.title} 
+             // MOBILE FIX: Full color by default on mobile, B&W on desktop
+             className="w-full h-full object-cover transition-transform duration-[1.2s] ease-out group-hover:scale-110 grayscale-0 md:grayscale md:group-hover:grayscale-0"
+          />
+          {/* Overlay only on desktop */}
+          <div className="hidden md:block absolute inset-0 bg-[#2F3E2F]/20 group-hover:bg-transparent transition-colors duration-500"></div>
+          
+          {/* Hover Button */}
+          <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-500">
+             <div className="w-12 h-12 md:w-16 md:h-16 rounded-full bg-[#E8E6E0]/10 backdrop-blur-md border border-[#E8E6E0]/30 flex items-center justify-center">
+                <ArrowUpRight className="text-[#E8E6E0]" size={20} />
+             </div>
           </div>
-        </ScrollExpandMedia>
-      </div>
+       </div>
 
-      {/* 2. Portfolio Cards Scroll Section */}
-      <div>
-        <PortfolioScroll />
-      </div>
+       {/* Text */}
+       <div className="flex justify-between items-start border-t border-[#E8E6E0]/10 pt-4">
+          <div>
+             <motion.h3 layoutId={`title-${data.id}`} className="text-xl md:text-2xl font-serif text-[#E8E6E0] mb-1">{data.title}</motion.h3>
+             <motion.span layoutId={`cat-${data.id}`} className="text-[#A3B18A] text-[10px] md:text-xs font-mono uppercase tracking-wider">{data.category}</motion.span>
+          </div>
+          <span className="text-[#E8E6E0]/30 text-[10px] md:text-xs font-mono">2024</span>
+       </div>
+    </motion.div>
+  );
+};
 
-      {/* 3. DemoOne (Full Screen FX) Section */}
-      <div className="relative z-10">
-        <FullScreenScrollFX sections={sections} header="MY BRAND" />
-      </div>
+// --- MODAL COMPONENT ---
+const ProjectModal = ({ data, onClose }) => {
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 md:p-8">
+       
+       {/* 1. Backdrop (Click to close) */}
+       <motion.div 
+          initial={{ opacity: 0 }} 
+          animate={{ opacity: 1 }} 
+          exit={{ opacity: 0 }}
+          onClick={onClose}
+          className="absolute inset-0 bg-[#1a241a]/95 backdrop-blur-md cursor-pointer"
+       />
+
+       {/* 2. The Card Expanded */}
+       <motion.div 
+          layoutId={`card-${data.id}`} 
+          className="
+            relative w-full max-w-5xl 
+            bg-transparent md:bg-[#2F3E2F] 
+            rounded-[4px] md:rounded-[4px] 
+            overflow-hidden 
+            shadow-none md:shadow-2xl 
+            flex flex-col md:flex-row 
+            max-h-[85vh]
+          "
+          onClick={(e) => e.stopPropagation()} 
+       >
+          
+          {/* Close Button */}
+          <button 
+             onClick={onClose} 
+             className="absolute top-2 right-0 md:top-4 md:right-4 z-50 p-2 rounded-full bg-black/40 backdrop-blur-md border border-[#E8E6E0]/20 text-[#E8E6E0] transition-colors"
+          >
+             <X size={20} />
+          </button>
+
+          {/* --- IMAGE SECTION --- */}
+          {/* Mobile: Full height fit / Desktop: Half width */}
+          <div className="w-full md:w-1/2 h-auto max-h-[80vh] md:max-h-full md:h-auto relative shrink-0 flex items-center justify-center">
+             <motion.img 
+                layoutId={`img-${data.id}`} 
+                src={data.src} 
+                className="w-auto h-auto max-w-full max-h-[80vh] md:h-full md:w-full md:object-cover rounded-[4px] md:rounded-none shadow-2xl md:shadow-none"
+             />
+          </div>
+
+          {/* --- CONTENT SECTION (HIDDEN ON MOBILE) --- */}
+          {/* This div is 'hidden' on default (mobile) and 'flex' on md (desktop) */}
+          <div className="hidden md:flex w-full md:w-1/2 p-6 md:p-16 flex-col justify-center relative bg-[#2F3E2F]">
+             
+             {/* Header */}
+             <div className="mb-4 md:mb-8">
+                <div className="flex items-center gap-3 mb-2 md:mb-4">
+                   <div className="p-1.5 bg-[#A3B18A]/10 rounded-full text-[#A3B18A]">
+                      <Tag size={14} />
+                   </div>
+                   <motion.span layoutId={`cat-${data.id}`} className="text-[#A3B18A] text-xs font-bold uppercase tracking-widest">
+                      {data.category} Project
+                   </motion.span>
+                </div>
+                <motion.h2 layoutId={`title-${data.id}`} className="text-3xl md:text-6xl font-serif text-[#E8E6E0] leading-none mb-4">
+                   {data.title}
+                </motion.h2>
+                <div className="w-16 h-[1px] bg-[#E8E6E0]/20"></div>
+             </div>
+
+             {/* Body */}
+             <motion.p 
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.2 }}
+                className="text-[#E8E6E0]/70 text-sm md:text-lg font-light leading-relaxed mb-6 md:mb-8"
+             >
+                {data.desc}
+             </motion.p>
+
+             {/* Footer Details */}
+             <motion.div 
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.3 }}
+                className="grid grid-cols-2 gap-4 border-t border-[#E8E6E0]/10 pt-6 mt-auto md:mt-0"
+             >
+                <div>
+                   <span className="text-[#E8E6E0]/40 text-[10px] uppercase tracking-widest block mb-1">Date</span>
+                   <span className="text-[#E8E6E0] font-mono text-xs md:text-sm">Oct 2024</span>
+                </div>
+                <div>
+                   <span className="text-[#E8E6E0]/40 text-[10px] uppercase tracking-widest block mb-1">Camera</span>
+                   <span className="text-[#E8E6E0] font-mono text-xs md:text-sm">Sony A7SIII</span>
+                </div>
+             </motion.div>
+
+          </div>
+
+       </motion.div>
     </div>
   );
-}
+};
+
+export default FilterableGallery;

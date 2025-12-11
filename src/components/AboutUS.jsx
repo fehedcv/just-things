@@ -1,150 +1,162 @@
-import React, { useEffect, useRef } from "react";
+import React, { useLayoutEffect, useRef } from "react";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { ArrowRight } from "lucide-react";
 
 gsap.registerPlugin(ScrollTrigger);
 
 const AboutSection = () => {
-  const sectionRef = useRef(null);
-  const mainImageRef = useRef(null);
-  const secondaryImageRef = useRef(null);
-  const contentRef = useRef(null);
+  const containerRef = useRef(null);
+  const leftColRef = useRef(null);
+  const rightColRef = useRef(null);
+  const revealImgRef = useRef(null);
 
-  useEffect(() => {
-    const section = sectionRef.current;
-    const mainImg = mainImageRef.current;
-    const secImg = secondaryImageRef.current;
-    const content = contentRef.current;
+  useLayoutEffect(() => {
+    const ctx = gsap.context(() => {
+      
+      // 1. Desktop: Pin the Left Column (Image) while Right Column scrolls
+      if (window.innerWidth > 768) {
+        ScrollTrigger.create({
+          trigger: containerRef.current,
+          start: "top top",
+          end: "bottom bottom",
+          pin: leftColRef.current,
+          scrub: true, 
+        });
+      }
 
-    let ctx = gsap.context(() => {
-      // 1. Main Image Parallax (Slower movement)
-      gsap.to(mainImg, {
-        yPercent: 15, // Moves down slightly
-        ease: "none",
-        scrollTrigger: {
-          trigger: section,
-          start: "top bottom",
-          end: "bottom top",
-          scrub: 1,
-        },
-      });
-
-      // 2. Secondary Image Parallax (Faster movement - Creates Depth)
-      gsap.fromTo(
-        secImg,
-        { yPercent: 50 }, // Starts lower
-        {
-          yPercent: -20, // Moves up significantly
-          ease: "none",
-          scrollTrigger: {
-            trigger: section,
-            start: "top bottom",
-            end: "bottom top",
-            scrub: 1.5,
-          },
-        }
-      );
-
-      // 3. Text Reveal
-      gsap.fromTo(
-        content.children,
+      // 2. Right Column Content Reveal (Staggered Fade Up)
+      const textElements = rightColRef.current.querySelectorAll(".anim-text");
+      gsap.fromTo(textElements, 
         { y: 50, opacity: 0 },
         {
           y: 0,
           opacity: 1,
-          duration: 1,
+          duration: 0.8,
           stagger: 0.1,
-          ease: "power3.out",
+          ease: "power2.out",
           scrollTrigger: {
-            trigger: content,
-            start: "top 80%",
-          },
+            trigger: rightColRef.current,
+            start: "top 70%",
+          }
         }
       );
-    }, sectionRef); // Scope context for cleanup
+
+      // 3. Secondary Image "Curtain Reveal"
+      gsap.fromTo(revealImgRef.current,
+        { clipPath: "inset(0% 100% 0% 0%)" }, // Hidden (from bottom)
+        { 
+          clipPath: "inset(0% 0% 0% 0%)",     // Fully Visible
+          duration: 1.5,
+          ease: "power4.inOut",
+          scrollTrigger: {
+            trigger: revealImgRef.current,
+            start: "top 80%",
+          }
+        }
+      );
+
+    }, containerRef);
 
     return () => ctx.revert();
   }, []);
 
   return (
-    <section
-      ref={sectionRef}
-      className="relative min-h-screen bg-[#0a0a0a] text-white overflow-hidden py-20 lg:py-0 flex items-center"
-    >
-      <div className="container mx-auto px-6 md:px-12 lg:px-20">
+    <section ref={containerRef} className="relative w-full bg-[#2F3E2F] text-[#E8E6E0] overflow-hidden">
+      
+      <div className="flex flex-col md:flex-row min-h-screen">
         
-        {/* Flex Container: Reverses on mobile (Text on top, images below) */}
-        <div className="flex flex-col lg:flex-row items-center lg:justify-between gap-12 lg:gap-0">
+        {/* =======================================
+            LEFT COLUMN: Sticky Image (Visual Anchor)
+           ======================================= */}
+        <div ref={leftColRef} className="w-full md:w-[45%] h-[60vh] md:h-screen relative overflow-hidden">
+          {/* Main Portrait */}
+          <img 
+            src="https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?q=80&w=1400&auto=format&fit=crop" 
+            alt="Photographer Portrait" 
+            className="w-full h-full object-cover grayscale hover:grayscale-0 transition-all duration-1000 ease-out"
+          />
           
-          {/* LEFT: Text Content */}
-          <div ref={contentRef} className="w-full lg:w-5/12 z-10 order-1 lg:order-1 mb-10 lg:mb-0">
-            <h4 className="text-xs md:text-sm font-medium tracking-[0.3em] text-gray-400 uppercase mb-4">
-              About Our Vision
-            </h4>
-            <h2 className="text-4xl md:text-6xl lg:text-7xl font-light leading-[1.1] mb-6">
-              Creating art <br />
-              from <span className="italic font-serif text-gray-300">chaos.</span>
-            </h2>
-            
-            <div className="w-12 h-[1px] bg-white/30 my-8"></div>
+          {/* Overlay Gradient (Bottom up) */}
+          <div className="absolute inset-0 bg-gradient-to-t from-[#2F3E2F] via-transparent to-transparent opacity-80 md:opacity-0"></div>
 
-            <p className="text-gray-400 text-base md:text-lg leading-relaxed max-w-md mb-8">
-              “We capture emotions, moments and stories that last forever.” 
-              Photography is more than a click; it's about finding the soul in the silence.
-            </p>
-
-            {/* Stats Row */}
-            <div className="grid grid-cols-3 gap-6 border-t border-white/10 pt-6">
-              <div>
-                <h3 className="text-2xl font-bold">200+</h3>
-                <p className="text-[10px] text-gray-500 uppercase tracking-widest mt-1">Projects</p>
-              </div>
-              <div>
-                <h3 className="text-2xl font-bold">5+</h3>
-                <p className="text-[10px] text-gray-500 uppercase tracking-widest mt-1">Years</p>
-              </div>
-              <div>
-                <h3 className="text-2xl font-bold">100%</h3>
-                <p className="text-[10px] text-gray-500 uppercase tracking-widest mt-1">Creative</p>
-              </div>
-            </div>
-            
-            <button className="mt-10 group flex items-center gap-3 text-sm uppercase tracking-widest hover:text-gray-300 transition-colors">
-              Know More
-              <span className="block w-8 h-[1px] bg-white group-hover:w-12 transition-all duration-300"></span>
-            </button>
+          {/* Floating 'About' Label */}
+          <div className="absolute top-12 left-12 hidden md:block">
+             <div className="flex items-center gap-4">
+               <span className="w-12 h-[1px] bg-[#E8E6E0]"></span>
+               <span className="text-[#E8E6E0] uppercase tracking-[0.3em] text-xs font-bold">About</span>
+             </div>
           </div>
+        </div>
 
-          {/* RIGHT: Image Composition (The "Stunning" Part) */}
-          <div className="relative w-full lg:w-6/12 h-[50vh] md:h-[70vh] lg:h-[90vh] flex items-center justify-center order-2 lg:order-2">
-            
-            {/* 1. Main Background Image (Portrait) */}
-            <div className="relative w-[85%] md:w-[70%] h-full overflow-hidden shadow-2xl grayscale hover:grayscale-0 transition-all duration-700 ease-out">
-              <div ref={mainImageRef} className="w-full h-[120%]">
-                <img
-                  src="https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?q=80&w=1287&auto=format&fit=crop"
-                  alt="Main Portrait"
-                  className="w-full h-full object-cover"
-                />
+        {/* =======================================
+            RIGHT COLUMN: Scrolling Content (Narrative)
+           ======================================= */}
+        <div ref={rightColRef} className="w-full md:w-[55%] py-20 px-8 md:px-24 flex flex-col justify-center">
+           
+           {/* Section 1: The Hook */}
+           <div className="mb-20">
+              <p className="anim-text text-[#A3B18A] font-mono text-sm mb-6">EST. 2024 • DUBAI</p>
+              <h2 className="anim-text text-5xl md:text-7xl font-serif leading-[1.1] mb-8">
+                We believe in the <br/>
+                <span className="text-[#A3B18A] italic">quiet</span> moments.
+              </h2>
+              <div className="anim-text w-full h-[1px] bg-[#E8E6E0]/20 mb-8"></div>
+              <p className="anim-text text-[#E8E6E0]/80 text-lg md:text-xl leading-relaxed font-light max-w-lg">
+                Photography is not just about the click—it’s about the breath before it. 
+                We specialize in capturing the raw, unscripted energy of life, weaving visuals that feel less like photos and more like memories.
+              </p>
+           </div>
+
+           {/* Section 2: Visual Break (Secondary Image) */}
+           <div className="w-full aspect-video md:aspect-[2/1] relative mb-20">
+              <div ref={revealImgRef} className="w-full h-full overflow-hidden">
+                 <img 
+                   src="https://images.unsplash.com/photo-1492691527719-9d1e07e534b4?q=80&w=1000&auto=format&fit=crop" 
+                   alt="Camera Detail" 
+                   className="w-full h-full object-cover"
+                 />
               </div>
-            </div>
+              {/* Caption */}
+              <div className="absolute -bottom-8 right-0 text-[#A3B18A] text-xs font-mono">
+                 FIG 01. THE PROCESS
+              </div>
+           </div>
 
-            {/* 2. Secondary Overlapping Image (Detail/Action Shot) */}
-            <div className="absolute bottom-[-10%] lg:bottom-[10%] left-0 lg:-left-[10%] w-[50%] md:w-[45%] aspect-[4/5] shadow-[0_20px_50px_rgba(0,0,0,0.5)] z-20 border-4 border-[#0a0a0a]">
-              <div ref={secondaryImageRef} className="w-full h-full overflow-hidden relative">
-                <img
-                  src="https://images.unsplash.com/photo-1492691527719-9d1e07e534b4?q=80&w=1000&auto=format&fit=crop"
-                  alt="Detail Shot"
-                  className="w-full h-full object-cover grayscale contrast-125"
-                />
-                 {/* Small Overlay text on secondary image */}
-                 <div className="absolute bottom-4 left-4 text-xs font-mono text-white/80 mix-blend-difference">
-                    EST. 2020
+           {/* Section 3: The Philosophy & Stats */}
+           <div className="grid grid-cols-1 md:grid-cols-2 gap-12 mb-16">
+              <div>
+                 <h3 className="anim-text text-2xl font-serif mb-4 text-[#E8E6E0]">The Vision</h3>
+                 <p className="anim-text text-[#E8E6E0]/60 text-sm leading-relaxed">
+                   To strip away the artificial and reveal the authentic. Whether it's a wedding, a brand story, or an architectural marvel, we look for the soul of the subject.
+                 </p>
+              </div>
+              <div>
+                 <h3 className="anim-text text-2xl font-serif mb-4 text-[#E8E6E0]">The Numbers</h3>
+                 <div className="anim-text flex justify-between border-b border-[#E8E6E0]/20 pb-2 mb-2">
+                    <span className="text-sm text-[#E8E6E0]/60">Projects</span>
+                    <span className="text-sm font-mono text-[#A3B18A]">150+</span>
+                 </div>
+                 <div className="anim-text flex justify-between border-b border-[#E8E6E0]/20 pb-2 mb-2">
+                    <span className="text-sm text-[#E8E6E0]/60">Exhibitions</span>
+                    <span className="text-sm font-mono text-[#A3B18A]">12</span>
+                 </div>
+                 <div className="anim-text flex justify-between border-b border-[#E8E6E0]/20 pb-2">
+                    <span className="text-sm text-[#E8E6E0]/60">Years</span>
+                    <span className="text-sm font-mono text-[#A3B18A]">05</span>
                  </div>
               </div>
-            </div>
+           </div>
 
-          </div>
+           {/* CTA */}
+           <div className="anim-text">
+              <button className="group flex items-center gap-4 text-[#E8E6E0] uppercase tracking-[0.2em] text-xs font-bold w-fit">
+                <span className="border-b border-[#E8E6E0]/30 pb-1 group-hover:border-[#A3B18A] group-hover:text-[#A3B18A] transition-colors duration-300">
+                  Read Full Story
+                </span>
+                <ArrowRight className="text-[#A3B18A] group-hover:translate-x-2 transition-transform duration-300" size={18} />
+              </button>
+           </div>
 
         </div>
       </div>

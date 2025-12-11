@@ -1,131 +1,120 @@
 import React, { useRef } from "react";
-import { motion, useScroll, useTransform } from "framer-motion";
+import { motion, useSpring, useMotionValue, useTransform } from "framer-motion";
 import { ArrowUpRight } from "lucide-react";
 
-const CinematicCTA = () => {
-  const sectionRef = useRef(null);
-  const buttonRef = useRef(null);
-
-  // Parallax effect for background video
-  const { scrollYProgress } = useScroll({
-    target: sectionRef,
-    offset: ["start end", "end start"]
-  });
+const LensPortalCTA = () => {
+  const containerRef = useRef(null);
   
-  // Video moves slightly slower for depth
-  const y = useTransform(scrollYProgress, [0, 1], ["-15%", "15%"]);
-  
-  // Text reveal animation variants
-  const textVariants = {
-    hidden: { y: 100, opacity: 0 },
-    visible: (i) => ({
-      y: 0,
-      opacity: 1,
-      transition: { delay: i * 0.1, duration: 0.8, ease: [0.22, 1, 0.36, 1] }
-    })
-  };
+  // --- MAGNETIC LOGIC ---
+  const x = useMotionValue(0);
+  const y = useMotionValue(0);
 
-  // --- MAGNETIC BUTTON EFFECT ---
+  // Smooth springs for the "heavy" lens feel
+  const springConfig = { damping: 20, stiffness: 150, mass: 1 };
+  const smoothX = useSpring(x, springConfig);
+  const smoothY = useSpring(y, springConfig);
+
   const handleMouseMove = (e) => {
-    const { left, top, width, height } = buttonRef.current.getBoundingClientRect();
-    const x = (e.clientX - (left + width / 2)) * 0.3;
-    const y = (e.clientY - (top + height / 2)) * 0.3;
-    buttonRef.current.style.transform = `translate(${x}px, ${y}px)`;
+    const { clientX, clientY } = e;
+    const { left, top, width, height } = containerRef.current.getBoundingClientRect();
+    
+    // Calculate distance from center
+    const centerX = left + width / 2;
+    const centerY = top + height / 2;
+    
+    // Move the lens slightly (divided by factor for subtle movement)
+    x.set((clientX - centerX) / 5);
+    y.set((clientY - centerY) / 5);
   };
 
   const handleMouseLeave = () => {
-    buttonRef.current.style.transform = `translate(0px, 0px)`;
+    x.set(0);
+    y.set(0);
   };
 
   return (
-    <section ref={sectionRef} className="relative min-h-screen overflow-hidden flex flex-col items-center justify-center bg-[#0a0a0a]">
-        
-      {/* --- 1. CINEMATIC VIDEO BACKGROUND (Parallax) --- */}
-      <div className="absolute inset-0 z-0 w-full h-[120%] -top-[10%] overflow-hidden">
-         <motion.div style={{ y }} className="w-full h-full">
-             <video 
-                src="/vid.mp4" // YOUR VIDEO URL
-                className="w-full h-full object-cover grayscale brightness-[0.3] scale-105"
-                autoPlay muted loop playsInline
-             />
-         </motion.div>
-         {/* Gradient Overlay for seamless blending */}
-         <div className="absolute inset-0 bg-gradient-to-b from-[#0a0a0a] via-transparent to-[#0a0a0a] z-10"></div>
-         <div className="absolute inset-0 bg-black/40 z-10"></div>
+    <section 
+      ref={containerRef}
+      onMouseMove={handleMouseMove}
+      onMouseLeave={handleMouseLeave}
+      className="relative w-full h-screen bg-[#2F3E2F] overflow-hidden flex flex-col items-center justify-center cursor-none" // Hide default cursor for immersion
+    >
+      
+      {/* Background Noise */}
+      <div className="absolute inset-0 opacity-[0.05] pointer-events-none bg-[url('https://www.transparenttextures.com/patterns/noise.png')]"></div>
+
+      {/* --- BACKGROUND TYPOGRAPHY (Static) --- */}
+      <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none z-0">
+         <h2 className="text-[12vw] font-serif text-[#E8E6E0] leading-[0.8] opacity-10 blur-sm">
+            CREATE
+         </h2>
+         <h2 className="text-[12vw] font-serif text-[#E8E6E0] leading-[0.8] opacity-10 blur-sm">
+            IMPACT
+         </h2>
       </div>
 
-      {/* --- 2. CONTENT --- */}
-      <div className="relative z-20 container mx-auto px-4 flex flex-col items-center text-center">
-        
-        {/* Small Tagline */}
-        <motion.div 
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="mb-6 flex items-center gap-3 border border-white/10 px-4 py-2 rounded-full bg-white/5 backdrop-blur-sm"
-        >
-            <span className="w-2 h-2 rounded-full bg-[#00f0ff] animate-pulse"></span>
-            <span className="text-xs font-mono uppercase tracking-[0.2em] text-gray-300">Open for Bookings</span>
-        </motion.div>
-
-        {/* GIANT TEXT (Responsive VW Units) */}
-        <h2 className="flex flex-col items-center font-black text-white uppercase tracking-tighter leading-[0.85]">
-            {/* Line 1 */}
-            <div className="overflow-hidden">
-                <motion.span 
-                    custom={0} variants={textVariants} initial="hidden" whileInView="visible" viewport={{ once: true }}
-                    className="block text-[12vw] md:text-[10vw]"
-                >
-                    Ready to
-                </motion.span>
-            </div>
-            
-            {/* Line 2 (Outlined / Gradient Style) */}
-            <div className="overflow-hidden">
-                <motion.span 
-                    custom={1} variants={textVariants} initial="hidden" whileInView="visible" viewport={{ once: true }}
-                    className="block text-[12vw] md:text-[10vw] text-transparent bg-clip-text bg-gradient-to-r from-white via-gray-400 to-gray-600"
-                >
-                    Capture
-                </motion.span>
+      {/* --- THE MAGNETIC LENS (Interactive) --- */}
+      <motion.div 
+        style={{ x: smoothX, y: smoothY }}
+        className="relative z-20"
+      >
+         <a 
+           href="/contact" 
+           className="group relative flex items-center justify-center w-[300px] h-[300px] md:w-[450px] md:h-[450px] rounded-full overflow-hidden"
+         >
+            {/* 1. Video/Image Inside Lens */}
+            <div className="absolute inset-0 w-full h-full bg-black">
+               <img 
+                 src="https://images.unsplash.com/photo-1492691527719-9d1e07e534b4?q=80&w=1000&auto=format&fit=crop" 
+                 alt="Lens"
+                 className="w-full h-full object-cover opacity-60 group-hover:opacity-40 group-hover:scale-110 transition-all duration-700 ease-out"
+               />
+               
+               {/* Inner Shadow / Vignette to look like a lens */}
+               <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_0%,#2F3E2F_100%)] opacity-80"></div>
             </div>
 
-            {/* Line 3 */}
-            <div className="overflow-hidden">
-                <motion.span 
-                    custom={2} variants={textVariants} initial="hidden" whileInView="visible" viewport={{ once: true }}
-                    className="block text-[12vw] md:text-[10vw]"
-                >
-                    The Story?
-                </motion.span>
-            </div>
-        </h2>
-        
-        {/* MAGNETIC BUTTON */}
-        <div 
-            ref={buttonRef}
-            onMouseMove={handleMouseMove}
-            onMouseLeave={handleMouseLeave}
-            className="mt-12 md:mt-16 transition-transform duration-300 ease-out"
-        >
-            <a 
-                href="/contact" 
-                className="group relative flex items-center justify-center gap-4 px-10 py-6 md:px-14 md:py-8 bg-white text-black rounded-full overflow-hidden transition-transform duration-300 hover:scale-105"
-            >
-                {/* Button Hover Fill (Green/Teal like screenshot) */}
-                <div className="absolute inset-0 bg-[#00e599] translate-y-full group-hover:translate-y-0 transition-transform duration-500 ease-[cubic-bezier(0.76, 0, 0.24, 1)] z-0"></div>
-                
-                <span className="relative z-10 text-lg md:text-xl font-bold uppercase tracking-widest group-hover:text-black transition-colors">
-                    Book Now
-                </span>
-                <ArrowUpRight size={24} className="relative z-10 group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform duration-300" />
-            </a>
-        </div>
+            {/* 2. Content Inside Lens */}
+            <div className="relative z-10 flex flex-col items-center text-center">
+               <span className="text-[#A3B18A] uppercase tracking-[0.3em] text-xs font-bold mb-2 opacity-0 -translate-y-4 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-300">
+                  Get in Touch
+               </span>
+               
+               <div className="overflow-hidden">
+                  <h3 className="text-5xl md:text-7xl font-serif text-[#E8E6E0] italic leading-none transform translate-y-0 group-hover:-translate-y-[120%] transition-transform duration-500 ease-in-out">
+                     Let's <br/> Talk
+                  </h3>
+                  {/* Duplicate Text for Hover Roll Effect */}
+                  <h3 className="absolute top-0 left-0 w-full text-5xl md:text-7xl font-serif text-[#A3B18A] italic leading-none transform translate-y-[120%] group-hover:translate-y-0 transition-transform duration-500 ease-in-out">
+                     Start <br/> Now
+                  </h3>
+               </div>
 
+               <div className="mt-6 w-12 h-12 rounded-full border border-[#E8E6E0]/30 flex items-center justify-center text-[#E8E6E0] group-hover:bg-[#E8E6E0] group-hover:text-[#2F3E2F] transition-all duration-300">
+                  <ArrowUpRight size={20} />
+               </div>
+            </div>
+
+            {/* 3. Decorative Rings (Lens Flares) */}
+            <div className="absolute inset-0 border border-[#E8E6E0]/10 rounded-full scale-90 group-hover:scale-95 transition-transform duration-700"></div>
+            <div className="absolute inset-0 border border-[#E8E6E0]/5 rounded-full scale-110 group-hover:scale-105 transition-transform duration-700"></div>
+
+         </a>
+      </motion.div>
+
+      {/* --- FOOTER LINKS --- */}
+      <div className="absolute bottom-10 w-full px-12 flex justify-between text-[#E8E6E0]/40 text-xs font-mono uppercase tracking-widest z-10 pointer-events-none md:pointer-events-auto">
+         <span className="hidden md:block">Based in Dubai</span>
+         <div className="flex gap-8">
+            <a href="#" className="hover:text-[#E8E6E0] transition-colors pointer-events-auto">Instagram</a>
+            <a href="#" className="hover:text-[#E8E6E0] transition-colors pointer-events-auto">LinkedIn</a>
+            <a href="#" className="hover:text-[#E8E6E0] transition-colors pointer-events-auto">Email</a>
+         </div>
+         <span className="hidden md:block">© 2025</span>
       </div>
 
     </section>
   );
 };
 
-export default CinematicCTA;
+export default LensPortalCTA;

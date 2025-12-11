@@ -1,141 +1,205 @@
-import React, { useEffect, useRef } from "react";
-import { gsap } from "gsap";
-import { ScrollTrigger } from "gsap/ScrollTrigger";
-import { Clapperboard, Wand2, Plane, Moon, Film, Settings } from "lucide-react";
+import React, { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Clapperboard, Wand2, Plane, Moon, Film, Settings, ArrowUpRight, Plus } from "lucide-react";
 
-gsap.registerPlugin(ScrollTrigger);
-
+// --- DATA ---
 const services = [
   {
+    id: "01",
     title: "Cinematic Edits",
-    icon: <Clapperboard size={20} />,
-    img: "https://images.unsplash.com/photo-1611162617474-5b21e879e113?q=80&w=1000&auto=format&fit=crop",
-    desc: "Storytelling",
+    subtitle: "Storytelling",
+    icon: <Clapperboard size={24} />,
+    img: "https://images.unsplash.com/photo-1536440136628-849c177e76a1?q=80&w=800&auto=format&fit=crop",
+    desc: "Narrative-driven video editing that turns raw footage into compelling stories. Color grading included.",
+    specs: ["4K Render", "Sound Design", "Color Grade"]
   },
   {
+    id: "02",
     title: "Retouching",
-    icon: <Wand2 size={20} />,
-    img: "https://images.unsplash.com/photo-1611162617474-5b21e879e113?q=80&w=1000&auto=format&fit=crop",
-    desc: "High-end Skin",
+    subtitle: "High-End Beauty",
+    icon: <Wand2 size={24} />,
+    img: "https://images.unsplash.com/photo-1500917293891-ef795e70e1f6?q=80&w=800&auto=format&fit=crop",
+    desc: "Magazine-quality skin retouching and frequency separation. Natural, flawless results.",
+    specs: ["Dodge & Burn", "Liquify", "Skin Tone"]
   },
   {
-    title: "Drone Shots",
-    icon: <Plane size={20} />,
-    img: "https://images.unsplash.com/photo-1611162617474-5b21e879e113?q=80&w=1000&auto=format&fit=crop",
-    desc: "Sky Visuals",
+    id: "03",
+    title: "Drone Visuals",
+    subtitle: "Aerial Views",
+    icon: <Plane size={24} />,
+    img: "https://images.unsplash.com/photo-1473968512647-3e447244af8f?q=80&w=800&auto=format&fit=crop",
+    desc: "FPV and cinematic drone shots to give your project a massive sense of scale.",
+    specs: ["4K 60fps", "FPV", "Top-Down"]
   },
   {
+    id: "04",
     title: "Night Mode",
-    icon: <Moon size={20} />,
-    img: "https://images.unsplash.com/photo-1611162617474-5b21e879e113?q=80&w=1000&auto=format&fit=crop",
-    desc: "Low Light",
+    subtitle: "Low Light",
+    icon: <Moon size={24} />,
+    img: "https://images.unsplash.com/photo-1517457373958-b7bdd4587205?q=80&w=800&auto=format&fit=crop",
+    desc: "Specialized low-light photography and videography for clubs, events, and street aesthetics.",
+    specs: ["No Noise", "Neon", "Atmosphere"]
   },
   {
-    title: "Reels",
-    icon: <Film size={20} />,
-    img: "https://images.unsplash.com/photo-1611162617474-5b21e879e113?q=80&w=1000&auto=format&fit=crop",
-    desc: "Viral Format",
-  },
-  {
-    title: "Pro Gear",
-    icon: <Settings size={20} />,
-    img: "https://images.unsplash.com/photo-1516035069371-29a1b244cc32?q=80&w=1000&auto=format&fit=crop",
-    desc: "Sony / RED",
-  },
+    id: "05",
+    title: "Viral Reels",
+    subtitle: "Social Growth",
+    icon: <Film size={24} />,
+    img: "https://images.unsplash.com/photo-1611162617474-5b21e879e113?q=80&w=800&auto=format&fit=crop",
+    desc: "Trend-aware editing specifically designed for Instagram Reels and TikTok algorithms.",
+    specs: ["Trendy Audio", "Fast Cuts", "Captions"]
+  }
 ];
 
 const ServicesSection = () => {
-  const gridRef = useRef(null);
-
-  useEffect(() => {
-    const items = gridRef.current.children;
-    
-    // Animation
-    gsap.fromTo(
-      items,
-      { y: 30, opacity: 0 },
-      {
-        y: 0,
-        opacity: 1,
-        duration: 0.6,
-        stagger: 0.05, 
-        ease: "power3.out",
-        scrollTrigger: {
-          trigger: gridRef.current,
-          start: "top 90%",
-        },
-      }
-    );
-  }, []);
+  const [activeId, setActiveId] = useState(services[0].id);
 
   return (
-    <section className="bg-[#0a0a0a] text-white py-16 px-4 md:py-24 md:px-20 border-t border-white/10">
-      <div className="max-w-7xl mx-auto">
-        
-        {/* Header */}
-        <div className="flex flex-col md:flex-row justify-between items-end mb-10 md:mb-16 px-2">
-          <h2 className="text-3xl md:text-5xl font-light tracking-tight leading-tight">
-            Content <span className="text-gray-500">Stack.</span>
-          </h2>
-          <p className="text-[10px] md:text-xs font-mono text-gray-400 uppercase tracking-widest mt-2 md:mt-0">
-            [ Services ]
-          </p>
-        </div>
-
-        {/* The Compact Grid */}
-        <div 
-            ref={gridRef} 
-            className="grid grid-cols-2 lg:grid-cols-3 border-l border-t border-white/10"
-        >
-          {services.map((service, index) => (
-            <div
-              key={index}
-              className="group relative border-r border-b border-white/10 h-[160px] md:h-[300px] overflow-hidden cursor-pointer"
-            >
-              
-              {/* Background Image Logic Changed Here: */}
-              {/* Mobile: opacity-100 (Always Visible) */}
-              {/* Desktop: opacity-0 -> hover:opacity-100 */}
-              <div className="absolute inset-0 z-0 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity duration-500 ease-out">
-                 <img 
-                    src={service.img} 
-                    alt={service.title} 
-                    // Mobile: scale-100 (Normal), Desktop: scale-110 -> 100 on hover
-                    className="w-full h-full object-cover grayscale md:grayscale group-hover:grayscale-0 scale-100 md:scale-110 md:group-hover:scale-100 transition-transform duration-700"
-                 />
-                 {/* Darker Overlay on Mobile (bg-black/60) for better text visibility */}
-                 <div className="absolute inset-0 bg-black/60 md:bg-black/40"></div>
-              </div>
-
-              {/* Content Container */}
-              <div className="relative z-10 h-full flex flex-col justify-between p-4 md:p-8 transition-colors duration-300">
-                
-                {/* Top: Icon & Number */}
-                <div className="flex justify-between items-start">
-                  <div className="p-2 md:p-3 bg-white/10 backdrop-blur-sm md:bg-white/5 rounded-full text-white md:text-gray-300 md:group-hover:bg-white md:group-hover:text-black transition-all duration-300">
-                    {React.cloneElement(service.icon, { className: "w-4 h-4 md:w-6 md:h-6" })} 
-                  </div>
-                  <span className="font-mono text-[10px] md:text-xs text-gray-400 md:text-gray-600 group-hover:text-white/70">
-                    0{index + 1}
-                  </span>
-                </div>
-
-                {/* Bottom: Text */}
-                <div>
-                  <h3 className="text-sm md:text-2xl font-semibold tracking-tight mb-1 md:group-hover:translate-x-2 transition-transform duration-300 leading-tight">
-                    {service.title}
-                  </h3>
-                  <p className="text-[10px] md:text-sm text-gray-400 md:text-gray-500 font-mono md:group-hover:text-gray-300 md:group-hover:translate-x-2 transition-transform duration-300 delay-75">
-                    {service.desc}
-                  </p>
-                </div>
-
-              </div>
+    <section className="bg-[#2F3E2F] text-[#E8E6E0] py-24 px-4 md:px-12 w-full min-h-screen flex flex-col justify-center">
+      
+      {/* Header */}
+      <div className="container mx-auto mb-16 flex flex-col md:flex-row justify-between items-end border-b border-[#E8E6E0]/10 pb-8">
+         <div className="space-y-4">
+            <div className="flex items-center gap-3">
+               <span className="w-2 h-2 rounded-full bg-[#A3B18A] animate-pulse"></span>
+               <span className="text-[#A3B18A] uppercase tracking-[0.2em] text-xs font-bold">Suite</span>
             </div>
-          ))}
-        </div>
+            <h2 className="text-4xl md:text-6xl font-serif leading-none">
+               Creative <span className="italic text-[#A3B18A]">Services</span>
+            </h2>
+         </div>
+         <p className="text-[#E8E6E0]/50 text-xs md:text-sm font-mono uppercase tracking-widest hidden md:block">
+            Select a service to expand
+         </p>
       </div>
+
+      {/* --- ACCORDION CONTAINER --- */}
+      {/* Desktop: Horizontal Flex | Mobile: Vertical Flex */}
+      <div className="flex flex-col md:flex-row w-full h-auto md:h-[600px] gap-4 container mx-auto">
+         {services.map((service) => (
+            <ServiceCard 
+               key={service.id} 
+               data={service} 
+               isActive={activeId === service.id} 
+               onClick={() => setActiveId(service.id)} 
+            />
+         ))}
+      </div>
+
     </section>
+  );
+};
+
+const ServiceCard = ({ data, isActive, onClick }) => {
+  return (
+    <motion.div
+      layout
+      onClick={onClick}
+      onMouseEnter={() => window.innerWidth > 768 && onClick()} // Hover on desktop
+      initial={false}
+      animate={{
+         flex: isActive ? 3 : 1,
+      }}
+      transition={{ type: "spring", stiffness: 100, damping: 20 }}
+      className={`
+         relative group cursor-pointer overflow-hidden rounded-[4px]
+         border border-[#E8E6E0]/10 bg-[#1a241a]
+         ${isActive ? 'h-[400px] md:h-auto' : 'h-[80px] md:h-auto'} 
+         /* Mobile: fixed heights for active/inactive. Desktop: flex width handles it */
+      `}
+    >
+       
+       {/* 1. BACKGROUND IMAGE (Visible only when Active) */}
+       <motion.div 
+          className="absolute inset-0 z-0"
+          animate={{ opacity: isActive ? 1 : 0 }}
+          transition={{ duration: 0.5 }}
+       >
+          <img 
+             src={data.img} 
+             alt={data.title} 
+             className="w-full h-full object-cover opacity-60 grayscale md:grayscale-0 contrast-125"
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-[#2F3E2F] via-[#2F3E2F]/50 to-transparent opacity-90"></div>
+       </motion.div>
+
+       {/* 2. CONTENT CONTAINER */}
+       <div className="relative z-10 w-full h-full p-6 flex flex-col justify-between">
+          
+          {/* TOP BAR */}
+          <div className={`flex justify-between items-center transition-all duration-500 ${isActive ? 'md:items-start' : 'md:flex-col md:h-full md:py-8'}`}>
+             
+             {/* ID & Icon */}
+             <div className="flex items-center gap-4">
+                <span className={`font-mono text-sm text-[#A3B18A] border border-[#A3B18A]/30 px-2 py-0.5 rounded-full ${isActive ? 'block' : 'hidden md:block'}`}>
+                   {data.id}
+                </span>
+                <div className={`text-[#E8E6E0] ${isActive ? 'opacity-100' : 'opacity-50'}`}>
+                   {data.icon}
+                </div>
+             </div>
+
+             {/* Collapsed Vertical Title (Desktop Only) */}
+             {!isActive && (
+                <div className="hidden md:block mt-auto">
+                   <h3 className="text-xl font-serif text-[#E8E6E0]/60 -rotate-90 origin-bottom-left whitespace-nowrap translate-x-4 tracking-wider">
+                      {data.title}
+                   </h3>
+                </div>
+             )}
+
+             {/* Mobile Expand Icon */}
+             <div className="md:hidden text-[#E8E6E0]/50">
+                {isActive ? null : <Plus size={20} />}
+             </div>
+
+          </div>
+
+          {/* ACTIVE CONTENT REVEAL */}
+          <AnimatePresence>
+             {isActive && (
+                <motion.div 
+                   initial={{ opacity: 0, y: 20 }}
+                   animate={{ opacity: 1, y: 0 }}
+                   exit={{ opacity: 0, y: 10 }}
+                   transition={{ delay: 0.2, duration: 0.4 }}
+                   className="mt-auto"
+                >
+                   {/* Title */}
+                   <h3 className="text-3xl md:text-5xl font-serif text-[#E8E6E0] leading-none mb-2">
+                      {data.title}
+                   </h3>
+                   <p className="text-[#A3B18A] text-xs font-bold uppercase tracking-widest mb-6">
+                      {data.subtitle}
+                   </p>
+
+                   {/* Description */}
+                   <p className="text-[#E8E6E0]/70 text-sm md:text-base leading-relaxed max-w-md mb-8">
+                      {data.desc}
+                   </p>
+
+                   {/* Specs/Tags */}
+                   <div className="flex flex-wrap gap-2 mb-8">
+                      {data.specs.map((spec, i) => (
+                         <span key={i} className="text-[10px] uppercase tracking-wider border border-[#E8E6E0]/20 px-3 py-1 rounded-sm text-[#E8E6E0]/60">
+                            {spec}
+                         </span>
+                      ))}
+                   </div>
+
+                   {/* CTA */}
+                   <button className="flex items-center gap-3 text-sm font-bold uppercase tracking-widest text-[#E8E6E0] hover:text-[#A3B18A] transition-colors group/btn">
+                      <span>View Packages</span>
+                      <ArrowUpRight size={16} className="group-hover/btn:translate-x-1 group-hover/btn:-translate-y-1 transition-transform" />
+                   </button>
+
+                </motion.div>
+             )}
+          </AnimatePresence>
+
+       </div>
+
+    </motion.div>
   );
 };
 
