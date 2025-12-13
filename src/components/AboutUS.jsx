@@ -62,7 +62,8 @@ const AboutSection = () => {
   }, []);
 
   return (
-    <section ref={containerRef} className="relative w-full bg-[#2F3E2F] text-[#E8E6E0] overflow-hidden">
+    // Applied global font-sans (Inter)
+    <section ref={containerRef} className="relative w-full bg-[#2F3E2F] text-[#E8E6E0] overflow-hidden font-sans">
       
       <div className="flex flex-col md:flex-row min-h-screen">
         
@@ -80,11 +81,11 @@ const AboutSection = () => {
           {/* Overlay Gradient (Bottom up) */}
           <div className="absolute inset-0 bg-gradient-to-t from-[#2F3E2F] via-transparent to-transparent opacity-80 md:opacity-0"></div>
 
-          {/* Floating 'About' Label */}
+          {/* Floating 'About' Label - Updated to Nav/Button Style */}
           <div className="absolute top-12 left-12 hidden md:block">
              <div className="flex items-center gap-4">
                <span className="w-12 h-[1px] bg-[#E8E6E0]"></span>
-               <span className="text-[#E8E6E0] uppercase tracking-[0.3em] text-xs font-bold">About</span>
+               <span className="text-[#E8E6E0] font-sans font-medium uppercase tracking-[0.25em] text-xs">About</span>
              </div>
           </div>
         </div>
@@ -96,13 +97,19 @@ const AboutSection = () => {
            
            {/* Section 1: The Hook */}
            <div className="mb-20">
-              <p className="anim-text text-[#A3B18A] font-mono text-sm mb-6">EST. 2024 • DUBAI</p>
-              <h2 className="anim-text text-5xl md:text-7xl font-serif leading-[1.1] mb-8">
+              {/* Tagline - Updated to Nav/Button Style */}
+              <p className="anim-text text-[#A3B18A] font-sans font-medium uppercase tracking-[0.25em] text-xs mb-6">EST. 2024 • DUBAI</p>
+              
+              {/* Headline - Updated to Playfair Medium */}
+              <h2 className="anim-text text-5xl md:text-7xl font-serif font-medium leading-[1.1] mb-8">
                 We believe in the <br/>
                 <span className="text-[#A3B18A] italic">quiet</span> moments.
               </h2>
+              
               <div className="anim-text w-full h-[1px] bg-[#E8E6E0]/20 mb-8"></div>
-              <p className="anim-text text-[#E8E6E0]/80 text-lg md:text-xl leading-relaxed font-light max-w-lg">
+              
+              {/* Intro Paragraph - Updated to Body Style (Inter, 16px/text-base, Normal) */}
+              <p className="anim-text text-[#E8E6E0]/80 font-sans text-base font-normal leading-relaxed max-w-lg">
                 Photography is not just about the click—it’s about the breath before it. 
                 We specialize in capturing the raw, unscripted energy of life, weaving visuals that feel less like photos and more like memories.
               </p>
@@ -117,8 +124,8 @@ const AboutSection = () => {
                    className="w-full h-full object-cover"
                  />
               </div>
-              {/* Caption */}
-              <div className="absolute -bottom-8 right-0 text-[#A3B18A] text-xs font-mono">
+              {/* Caption - Updated to Nav/Button Style */}
+              <div className="absolute -bottom-8 right-0 text-[#A3B18A] font-sans font-medium text-xs uppercase tracking-[0.25em]">
                  FIG 01. THE PROCESS
               </div>
            </div>
@@ -126,31 +133,36 @@ const AboutSection = () => {
            {/* Section 3: The Philosophy & Stats */}
            <div className="grid grid-cols-1 md:grid-cols-2 gap-12 mb-16">
               <div>
-                 <h3 className="anim-text text-2xl font-serif mb-4 text-[#E8E6E0]">The Vision</h3>
-                 <p className="anim-text text-[#E8E6E0]/60 text-sm leading-relaxed">
+                 {/* H3 - Updated to Playfair Medium */}
+                 <h3 className="anim-text text-2xl font-serif font-medium mb-4 text-[#E8E6E0]">The Vision</h3>
+                 {/* P - Updated to Body Style */}
+                 <p className="anim-text text-[#E8E6E0]/60 font-sans text-base font-normal leading-relaxed">
                    To strip away the artificial and reveal the authentic. Whether it's a wedding, a brand story, or an architectural marvel, we look for the soul of the subject.
                  </p>
               </div>
               <div>
-                 <h3 className="anim-text text-2xl font-serif mb-4 text-[#E8E6E0]">The Numbers</h3>
+                 {/* H3 - Updated to Playfair Medium */}
+                 <h3 className="anim-text text-2xl font-serif font-medium mb-4 text-[#E8E6E0]">The Numbers</h3>
+                 
+                 {/* Stats - Updated to Body Style */}
                  <div className="anim-text flex justify-between border-b border-[#E8E6E0]/20 pb-2 mb-2">
-                    <span className="text-sm text-[#E8E6E0]/60">Projects</span>
-                    <span className="text-sm font-mono text-[#A3B18A]">150+</span>
+                    <span className="font-sans text-base font-normal text-[#E8E6E0]/60">Projects</span>
+                    <span className="font-sans text-base font-medium text-[#A3B18A]">150+</span>
                  </div>
                  <div className="anim-text flex justify-between border-b border-[#E8E6E0]/20 pb-2 mb-2">
-                    <span className="text-sm text-[#E8E6E0]/60">Exhibitions</span>
-                    <span className="text-sm font-mono text-[#A3B18A]">12</span>
+                    <span className="font-sans text-base font-normal text-[#E8E6E0]/60">Exhibitions</span>
+                    <span className="font-sans text-base font-medium text-[#A3B18A]">12</span>
                  </div>
                  <div className="anim-text flex justify-between border-b border-[#E8E6E0]/20 pb-2">
-                    <span className="text-sm text-[#E8E6E0]/60">Years</span>
-                    <span className="text-sm font-mono text-[#A3B18A]">05</span>
+                    <span className="font-sans text-base font-normal text-[#E8E6E0]/60">Years</span>
+                    <span className="font-sans text-base font-medium text-[#A3B18A]">05</span>
                  </div>
               </div>
            </div>
 
-           {/* CTA */}
+           {/* CTA - Updated to Button Style */}
            <div className="anim-text">
-              <button className="group flex items-center gap-4 text-[#E8E6E0] uppercase tracking-[0.2em] text-xs font-bold w-fit">
+              <button className="group flex items-center gap-4 text-[#E8E6E0] font-sans font-medium uppercase tracking-[0.25em] text-xs w-fit">
                 <span className="border-b border-[#E8E6E0]/30 pb-1 group-hover:border-[#A3B18A] group-hover:text-[#A3B18A] transition-colors duration-300">
                   Read Full Story
                 </span>

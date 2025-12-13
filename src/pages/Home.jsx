@@ -1,6 +1,5 @@
 import React, { useEffect } from 'react'
 import HeroSection from '../components/HeroSection'
-import CategorySection from '../components/Categories'
 import FeaturedProjects from '../components/FeaturedProjects'
 import AboutUs from '../components/AboutUS'
 import ServicesSection from '../components/ServiceSection'
@@ -18,7 +17,6 @@ const Home = () => {
   return (
     <div className="w-full bg-[#0A0A0A]">
       <HeroSection />
-      <CategorySection />
       <FeaturedProjects />
       <AboutUs />
       <ServicesSection />
@@ -26,7 +24,6 @@ const Home = () => {
       <TestimonialsSection />
       <InstagramFeed />
       <CallToAction />
-
     </div>
   )
 }

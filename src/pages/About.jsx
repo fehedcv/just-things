@@ -1,7 +1,7 @@
 import React, { useLayoutEffect, useRef } from 'react';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
-import { Camera, Aperture, Focus, Film, Eye } from 'lucide-react';
+import { Camera, Aperture, Film, Eye, Instagram, Twitter, Linkedin, Mail, ArrowUpRight } from 'lucide-react';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -44,6 +44,7 @@ const AboutPage = () => {
          }
       );
       
+      // Bio items stagger
       gsap.utils.toArray('.bio-data-item').forEach((item, i) => {
          gsap.fromTo(item,
             { x: 30, opacity: 0 },
@@ -57,6 +58,18 @@ const AboutPage = () => {
          );
       });
 
+      // Social links stagger
+      gsap.fromTo('.social-link',
+        { y: 20, opacity: 0 },
+        {
+          y: 0, opacity: 1, stagger: 0.1, duration: 0.6,
+          scrollTrigger: {
+             trigger: '.social-container',
+             start: "top 90%",
+          }
+        }
+      );
+
     }, containerRef);
     return () => ctx.revert();
   }, []);
@@ -64,7 +77,6 @@ const AboutPage = () => {
   const splitText = (text) => text.split(" ").map((word, i) => <span key={i} className="word inline-block mr-2 md:mr-4">{word}</span>);
 
   return (
-    // Added padding to clear potential fixed navbar
     <div ref={containerRef} className="bg-[#2F3E2F] text-[#E8E6E0] font-sans overflow-hidden pt-24 md:pt-32 pb-20">
       
       {/* --- HERO SECTION --- */}
@@ -108,10 +120,10 @@ const AboutPage = () => {
 
       {/* --- BIO SECTION --- */}
       <section ref={bioRef} className="py-12 md:py-32 container mx-auto px-6 relative z-10 mb-20">
-         <div className="grid md:grid-cols-2 gap-12 md:gap-20 items-center">
+         <div className="grid md:grid-cols-2 gap-12 md:gap-20 items-start">
             
-            {/* Portrait (Left on Desktop, Top on Mobile) */}
-            <div className="bio-portrait relative h-[50vh] md:h-[700px] bg-[#1a241a] rounded-[2px] overflow-hidden order-1 md:order-none shadow-2xl">
+            {/* Portrait */}
+            <div className="bio-portrait relative h-[50vh] md:h-[700px] bg-[#1a241a] rounded-[2px] overflow-hidden order-1 md:order-none shadow-2xl sticky top-24">
                <img 
                   src="https://images.unsplash.com/photo-1556157382-97eda2d62296?q=80&w=1200&auto=format&fit=crop" 
                   alt="Portrait" 
@@ -124,8 +136,10 @@ const AboutPage = () => {
                <div className="absolute inset-0 border border-[#A3B18A]/30 m-3 pointer-events-none"></div>
             </div>
 
-            {/* Bio Data (Right on Desktop, Bottom on Mobile) */}
-            <div className="space-y-8 md:space-y-12 order-2 md:order-none">
+            {/* Bio Data & Socials */}
+            <div className="space-y-12 md:space-y-16 order-2 md:order-none">
+               
+               {/* Intro Text */}
                <div>
                   <h2 className="text-4xl md:text-6xl font-serif mb-4 md:mb-6">Just-Things</h2>
                   <p className="text-lg md:text-xl text-[#A3B18A] font-light leading-relaxed">
@@ -133,6 +147,7 @@ const AboutPage = () => {
                   </p>
                </div>
 
+               {/* Bio Items */}
                <div className="space-y-6 md:space-y-8 font-mono">
                   {[
                      { icon: <Eye />, title: "Philosophy", text: "I don't capture reality; I curate it. My work is a study in high-contrast noir." },
@@ -148,6 +163,32 @@ const AboutPage = () => {
                      </div>
                   ))}
                </div>
+
+               {/* Social Links Section */}
+               <div className="social-container pt-8 border-t border-[#A3B18A]/20">
+                  <h3 className="text-xs uppercase tracking-[0.2em] font-bold text-[#A3B18A] mb-6">Connect</h3>
+                  <div className="grid grid-cols-2 gap-4">
+                     {[
+                        { name: "Instagram", icon: <Instagram size={18} />, href: "#" },
+                        { name: "Twitter / X", icon: <Twitter size={18} />, href: "#" },
+                        { name: "LinkedIn", icon: <Linkedin size={18} />, href: "#" },
+                        { name: "Email Me", icon: <Mail size={18} />, href: "mailto:hello@example.com" }
+                     ].map((link, i) => (
+                        <a 
+                           key={i} 
+                           href={link.href}
+                           className="social-link group flex items-center justify-between p-4 border border-[#E8E6E0]/10 hover:border-[#A3B18A] bg-[#E8E6E0]/5 hover:bg-[#A3B18A]/10 transition-all duration-300 rounded-sm"
+                        >
+                           <div className="flex items-center gap-3 text-[#E8E6E0] group-hover:text-[#A3B18A] transition-colors">
+                              {link.icon}
+                              <span className="text-sm font-mono tracking-wide">{link.name}</span>
+                           </div>
+                           <ArrowUpRight size={14} className="text-[#E8E6E0]/30 group-hover:text-[#A3B18A] group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all" />
+                        </a>
+                     ))}
+                  </div>
+               </div>
+
             </div>
 
          </div>

@@ -1,198 +1,184 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useLayoutEffect, useRef } from "react";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
-import * as THREE from "three";
-import { Camera } from "lucide-react";
+import { Aperture, Maximize, Focus, Minus } from "lucide-react";
 
 gsap.registerPlugin(ScrollTrigger);
 
-const ExpandableRainSection = () => {
-  const wrapperRef = useRef(null);
-  const stickyContainerRef = useRef(null);
-  const cardRef = useRef(null);
+const ShutterRevealSection = () => {
+  const containerRef = useRef(null);
+  const stickyRef = useRef(null);
+  const shutterTopRef = useRef(null);
+  const shutterBottomRef = useRef(null);
+  const imageRef = useRef(null);
   const textRef = useRef(null);
-  const rainContainerRef = useRef(null);
+  const uiRef = useRef(null);
 
-  // --- 1. THREE.JS RAIN ENGINE ---
-  useEffect(() => {
-    if (!rainContainerRef.current) return;
-
-    // Setup
-    const scene = new THREE.Scene();
-    // Soft Fog to blend rain into the dark green background
-    scene.fog = new THREE.FogExp2(0x2F3E2F, 0.002);
-
-    const width = rainContainerRef.current.clientWidth;
-    const height = rainContainerRef.current.clientHeight;
-
-    const camera = new THREE.PerspectiveCamera(75, width / height, 0.1, 1000);
-    camera.position.z = 20;
-
-    const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
-    renderer.setSize(width, height);
-    renderer.setPixelRatio(window.devicePixelRatio);
-    rainContainerRef.current.appendChild(renderer.domElement);
-
-    // Particles (Rain)
-    const rainCount = 2000;
-    const rainGeo = new THREE.BufferGeometry();
-    const rainPos = new Float32Array(rainCount * 3);
-
-    for(let i=0; i<rainCount*3; i++) {
-        rainPos[i] = (Math.random() - 0.5) * 60; // Spread wide
-    }
-
-    rainGeo.setAttribute('position', new THREE.BufferAttribute(rainPos, 3));
-
-    // Material: Cream colored rain to match theme
-    const rainMat = new THREE.PointsMaterial({
-        color: 0xE8E6E0,
-        size: 0.1,
-        transparent: true,
-        opacity: 0.6,
-    });
-
-    const rainMesh = new THREE.Points(rainGeo, rainMat);
-    scene.add(rainMesh);
-
-    // Animation Loop
-    let animationId;
-    const animate = () => {
-        animationId = requestAnimationFrame(animate);
-        const positions = rainGeo.attributes.position.array;
-
-        for(let i=1; i<rainCount*3; i+=3) {
-            positions[i] -= 0.3; // Gravity speed
-            if (positions[i] < -20) {
-                positions[i] = 20; // Reset to top
-            }
-        }
-        rainGeo.attributes.position.needsUpdate = true;
-        renderer.render(scene, camera);
-    };
-    animate();
-
-    // Handle Resize
-    const handleResize = () => {
-        if (!rainContainerRef.current) return;
-        const newW = rainContainerRef.current.clientWidth;
-        const newH = rainContainerRef.current.clientHeight;
-        camera.aspect = newW / newH;
-        camera.updateProjectionMatrix();
-        renderer.setSize(newW, newH);
-    };
-    window.addEventListener('resize', handleResize);
-
-    return () => {
-        window.removeEventListener('resize', handleResize);
-        cancelAnimationFrame(animationId);
-        if (rainContainerRef.current && renderer.domElement) {
-             rainContainerRef.current.removeChild(renderer.domElement);
-        }
-        rainGeo.dispose();
-        rainMat.dispose();
-        renderer.dispose();
-    };
-  }, []);
-
-
-  // --- 2. GSAP EXPANSION ANIMATION ---
-  useEffect(() => {
-    let ctx = gsap.context(() => {
+  useLayoutEffect(() => {
+    const ctx = gsap.context(() => {
       
       const tl = gsap.timeline({
         scrollTrigger: {
-          trigger: wrapperRef.current,
+          trigger: containerRef.current,
           start: "top top",
-          end: "+=200%", // Long scroll distance for smooth effect
-          pin: stickyContainerRef.current,
-          scrub: 1,
+          end: "+=150%", // Determines how long the scroll takes
+          pin: true,
+          scrub: 1, // Smooth physics linkage
+          anticipatePin: 1,
         }
       });
 
-      // Animation: Card expands from center to full screen
-      tl.to(cardRef.current, {
-        width: "100vw",
-        height: "100vh",
-        borderRadius: "0px", // Remove corners as it fills screen
+      // 1. The Shutter Open Animation
+      tl.to(shutterTopRef.current, {
+        yPercent: -100,
         ease: "power2.inOut",
         duration: 2
-      });
+      }, "open")
+      .to(shutterBottomRef.current, {
+        yPercent: 100,
+        ease: "power2.inOut",
+        duration: 2
+      }, "open");
 
-      // Text Fades out and moves up
-      tl.to(textRef.current, {
-        opacity: 0,
-        scale: 1.2,
-        duration: 0.5
-      }, 0);
+      // 2. The Image Parallax (Zoom Out effect for depth)
+      tl.fromTo(imageRef.current, 
+        { scale: 1.3, filter: "grayscale(100%) blur(5px)" },
+        { scale: 1, filter: "grayscale(0%) blur(0px)", duration: 2, ease: "power2.out" },
+        "open"
+      );
 
-      // Rain Container opacity adjustment (optional, keeps it visible)
-      tl.to(rainContainerRef.current, {
-        opacity: 0.8, // Slightly more visible when full screen
-      }, 0);
+      // 3. Text Reveal (Scaling up as shutter opens)
+      tl.fromTo(textRef.current,
+        { scale: 0.8, opacity: 0 },
+        { scale: 1, opacity: 1, duration: 1.5, ease: "back.out(1.7)" },
+        "open+=0.5"
+      );
 
-    }, wrapperRef);
+      // 4. UI Elements Fade In
+      tl.fromTo(uiRef.current, 
+        { opacity: 0 }, 
+        { opacity: 1, duration: 1 }, 
+        "open+=1"
+      );
+
+    }, containerRef);
 
     return () => ctx.revert();
   }, []);
 
   return (
-    // Wrapper provides height for scrolling
-    <div ref={wrapperRef} className="relative h-[300vh] bg-[#2F3E2F]">
+    // Applied global font-sans (Inter)
+    <div ref={containerRef} className="relative w-full h-screen bg-[#2F3E2F] overflow-hidden font-sans">
       
-      {/* Sticky Container: Holds the view in place */}
+      {/* --- BACKGROUND IMAGE LAYER (Revealed) --- */}
+      <div className="absolute inset-0 z-0">
+        <img 
+          ref={imageRef}
+          src="/bg.jpg" 
+          alt="Cinematic Photography" 
+          className="w-full h-full object-cover"
+        />
+        {/* Film Grain Overlay */}
+        <div className="absolute inset-0 opacity-[0.05] pointer-events-none bg-[url('https://www.transparenttextures.com/patterns/noise.png')]"></div>
+        {/* Vignette */}
+        <div className="absolute inset-0 bg-radial-gradient(circle, transparent 40%, #000000 120%) opacity-60"></div>
+      </div>
+
+      {/* --- SHUTTER PANELS (The Mask) --- */}
+      {/* Top Panel */}
       <div 
-        ref={stickyContainerRef} 
-        className="h-screen w-full flex items-center justify-center overflow-hidden sticky top-0 bg-[#2F3E2F]"
+        ref={shutterTopRef}
+        className="absolute top-0 left-0 w-full h-[50vh] bg-[#2F3E2F] z-20 flex items-end justify-center border-b border-[#E8E6E0]/10"
       >
-        
-        {/* --- THE EXPANDING CARD --- */}
-        <div 
-           ref={cardRef}
-           className="relative w-[85vw] md:w-[30vw] h-[50vh] md:h-[60vh] bg-[#1a241a] rounded-t-[200px] rounded-b-[10px] overflow-hidden shadow-2xl z-20"
-        >
-            {/* 1. Background Image */}
-            <img 
-              src="/bg.jpg" 
-              alt="Moody Rain" 
-              className="absolute inset-0 w-full h-full object-cover opacity-80"
-            />
+        <div className="mb-4 text-[#A3B18A] flex flex-col items-center gap-2">
+            {/* Label - Updated to Nav/Button Style */}
+            <span className="text-[10px] font-sans font-medium uppercase tracking-[0.25em]">Locked</span>
+            <div className="w-[1px] h-12 bg-[#A3B18A]"></div>
+        </div>
+      </div>
 
-            {/* 2. Gradient Overlay for Text Readability */}
-            <div className="absolute inset-0 bg-gradient-to-b from-[#2F3E2F]/40 via-transparent to-[#2F3E2F]/90"></div>
+      {/* Bottom Panel */}
+      <div 
+        ref={shutterBottomRef}
+        className="absolute bottom-0 left-0 w-full h-[50vh] bg-[#2F3E2F] z-20 flex items-start justify-center border-t border-[#E8E6E0]/10"
+      >
+         <div className="mt-4 text-[#A3B18A] flex flex-col items-center gap-2">
+            <div className="w-[1px] h-12 bg-[#A3B18A]"></div>
+            {/* Label - Updated to Nav/Button Style */}
+            <span className="text-[10px] font-sans font-medium uppercase tracking-[0.25em]">Scroll</span>
+        </div>
+      </div>
 
-            {/* 3. Three.js Rain Layer (Sits on top of image) */}
-            <div ref={rainContainerRef} className="absolute inset-0 z-10 pointer-events-none mix-blend-screen"></div>
+      {/* --- CENTER CONTENT (Appears over image) --- */}
+      <div className="absolute inset-0 z-10 flex flex-col items-center justify-center pointer-events-none">
+        <div ref={textRef} className="text-center mix-blend-overlay">
+           <div className="flex items-center justify-center gap-4 mb-4">
+              <Minus className="text-[#E8E6E0]" />
+              {/* Date Tag - Updated to Nav/Button Style */}
+              <span className="text-[#E8E6E0] font-sans font-medium text-xs md:text-sm uppercase tracking-[0.4em]">Est. 2024</span>
+              <Minus className="text-[#E8E6E0]" />
+           </div>
+           
+           {/* Main Headline - Updated to Playfair Medium */}
+           <h1 className="text-[15vw] md:text-[12vw] font-serif font-medium text-[#E8E6E0] leading-none tracking-tight opacity-90">
+             CAPTURE
+           </h1>
+           
+           {/* Subtitle - Updated to Body/Nav Style */}
+           <p className="text-sm md:text-xl font-sans font-medium text-[#E8E6E0] uppercase tracking-[0.5em] mt-2 md:mt-4">
+             The Untamed Light
+           </p>
+        </div>
+      </div>
 
-            {/* 4. Text Content (Inside the Card) */}
-            <div ref={textRef} className="absolute inset-0 z-20 flex flex-col items-center justify-center text-center px-6">
-                <div className="mb-6 animate-pulse text-[#A3B18A]">
-                   <Camera size={32} />
-                </div>
-                
-                <h2 className="text-4xl md:text-6xl font-serif text-[#E8E6E0] leading-none mb-4 drop-shadow-lg">
-                  The Unseen <br/> <span className="italic text-[#A3B18A]">Moment</span>
-                </h2>
-                
-                <p className="text-[#E8E6E0]/80 text-xs md:text-sm font-mono tracking-[0.2em] uppercase max-w-xs mt-4">
-                  Scroll to immerse yourself in the storm.
-                </p>
+      {/* --- CAMERA HUD UI (Static Overlay) --- */}
+      <div ref={uiRef} className="absolute inset-0 z-10 pointer-events-none p-6 md:p-12 flex flex-col justify-between">
+         
+         {/* Top UI - Updated to Nav/Button Style (Inter, 0.25em tracking) */}
+         <div className="flex justify-between items-start text-[#E8E6E0]/60 font-sans font-medium text-[10px] md:text-xs uppercase tracking-[0.25em]">
+            <div className="flex gap-4 md:gap-8">
+               <div className="flex items-center gap-2">
+                  <Aperture size={14} className="text-[#A3B18A]" />
+                  <span>F/1.8</span>
+               </div>
+               <span>ISO 400</span>
+               <span>1/2000</span>
             </div>
+            <div className="flex items-center gap-2">
+               <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse"></div>
+               <span>REC</span>
+            </div>
+         </div>
 
-            {/* 5. Decorative Border */}
-            <div className="absolute inset-4 border border-[#E8E6E0]/20 rounded-t-[190px] rounded-b-[5px] pointer-events-none z-30"></div>
-        </div>
+         {/* Center Focus Brackets */}
+         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[60vw] h-[40vh] border border-[#E8E6E0]/10">
+            <div className="absolute top-0 left-0 w-4 h-4 border-t border-l border-[#E8E6E0]/50"></div>
+            <div className="absolute top-0 right-0 w-4 h-4 border-t border-r border-[#E8E6E0]/50"></div>
+            <div className="absolute bottom-0 left-0 w-4 h-4 border-b border-l border-[#E8E6E0]/50"></div>
+            <div className="absolute bottom-0 right-0 w-4 h-4 border-b border-r border-[#E8E6E0]/50"></div>
+            
+            {/* Crosshair */}
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-[#A3B18A]/50">
+               <Focus size={48} strokeWidth={1} />
+            </div>
+         </div>
 
-        {/* --- BACKGROUND TEXT (Behind the card, visible as it expands) --- */}
-        <div className="absolute inset-0 flex items-center justify-center z-0 pointer-events-none">
-             <h1 className="text-[15vw] font-serif text-[#E8E6E0] opacity-5 leading-none">
-                VISION
-             </h1>
-        </div>
+         {/* Bottom UI - Updated to Nav/Button Style */}
+         <div className="flex justify-between items-end text-[#E8E6E0]/60 font-sans font-medium text-[10px] md:text-xs uppercase tracking-[0.25em]">
+            <div className="flex items-center gap-2">
+               <Maximize size={14} />
+               <span>Wide Angle</span>
+            </div>
+            <div className="text-right">
+               <span className="block text-[#A3B18A]">4K / 60FPS</span>
+               <span>RAW FORMAT</span>
+            </div>
+         </div>
 
       </div>
+
     </div>
   );
 };
 
-export default ExpandableRainSection;
+export default ShutterRevealSection;

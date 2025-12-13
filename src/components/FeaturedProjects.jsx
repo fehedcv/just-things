@@ -1,211 +1,199 @@
-import React, { useLayoutEffect, useRef, useState } from 'react';
+import React, { useLayoutEffect, useRef } from 'react';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
-import { ArrowUpRight } from 'lucide-react';
 
 gsap.registerPlugin(ScrollTrigger);
 
-const projects = [
+const categories = [
   {
     id: 1,
-    title: "Neon Nights",
-    category: "Event",
+    title: "Wedding Stories",
+    subtitle: "Timeless Union",
     year: "2024",
-    image: "https://images.unsplash.com/photo-1492684223066-81342ee5ff30?q=80&w=800&auto=format&fit=crop"
+    description: "Capturing raw emotions and unspoken vows in natural light.",
+    image: "https://images.unsplash.com/photo-1519741497674-611481863552?q=80&w=1200&auto=format&fit=crop" 
   },
   {
     id: 2,
-    title: "Vogue Editorial",
-    category: "Fashion",
+    title: "Editorial Fashion",
+    subtitle: "Bold Aesthetics",
     year: "2024",
-    image: "https://plus.unsplash.com/premium_photo-1664112065821-274ec259c6c2?q=80&w=800&auto=format&fit=crop"
+    description: "High-end portraiture blending human beauty with organic textures.",
+    image: "/bg.jpg" 
   },
   {
     id: 3,
-    title: "Royal Union",
-    category: "Wedding",
+    title: "Product Design",
+    subtitle: "Visual Clarity",
     year: "2023",
-    image: "https://images.unsplash.com/photo-1519741497674-611481863552?q=80&w=800&auto=format&fit=crop"
+    description: "Showcasing objects with precision, symmetry and deep shadows.",
+    image: "https://images.unsplash.com/photo-1580828343064-fde4fc206bc6?q=80&w=1200&auto=format&fit=crop" 
   },
   {
     id: 4,
-    title: "Urban Lines",
-    category: "Architecture",
+    title: "Architecture",
+    subtitle: "Spaces & Lines",
     year: "2023",
-    image: "https://images.unsplash.com/photo-1486325212027-8081e485255e?q=80&w=800&auto=format&fit=crop"
-  },
-  {
-    id: 5,
-    title: "Sonic Waves",
-    category: "Concert",
-    year: "2022",
-    image: "https://images.unsplash.com/photo-1470225620780-dba8ba36b745?q=80&w=800&auto=format&fit=crop"
+    description: "Exploring symmetry where structure meets nature.",
+    image: "https://images.unsplash.com/photo-1479839672679-a46483c0e7c8?q=80&w=1200&auto=format&fit=crop" 
   }
 ];
 
-const InteractiveListSection = () => {
+const ModernWorkSection = () => {
   const containerRef = useRef(null);
-  const cursorRef = useRef(null);
-  const cursorLabelRef = useRef(null);
-  const mobileCardsRef = useRef([]);
-  const [activeImage, setActiveImage] = useState(null);
+  
+  const leftColumn = categories.filter((_, i) => i % 2 === 0);
+  const rightColumn = categories.filter((_, i) => i % 2 !== 0);
 
-  // --- DESKTOP CURSOR ANIMATION ---
   useLayoutEffect(() => {
     const ctx = gsap.context(() => {
       
-      // Only run mouse logic if screen is wide
-      if (window.innerWidth > 768) {
-        const xTo = gsap.quickTo(cursorRef.current, "x", { duration: 0.5, ease: "power3" });
-        const yTo = gsap.quickTo(cursorRef.current, "y", { duration: 0.5, ease: "power3" });
+      const items = gsap.utils.toArray('.gallery-item');
 
-        const moveCursor = (e) => {
-           xTo(e.clientX);
-           yTo(e.clientY);
-        };
+      items.forEach((item) => {
+        const imgWrapper = item.querySelector('.img-wrapper');
+        const img = item.querySelector('img');
+        const textContent = item.querySelector('.text-content');
 
-        window.addEventListener("mousemove", moveCursor);
-        return () => window.removeEventListener("mousemove", moveCursor);
-      } else {
-        // --- MOBILE SCROLL ANIMATION ---
-        mobileCardsRef.current.forEach((card, index) => {
-          if(!card) return;
-          gsap.fromTo(card, 
-            { y: 50, opacity: 0 },
-            {
-              y: 0,
-              opacity: 1,
-              duration: 0.8,
-              ease: "power2.out",
-              scrollTrigger: {
-                trigger: card,
-                start: "top 85%", // Trigger when card enters view
-              }
-            }
-          );
+        // --- 1. Reveal Animation (No Delay) ---
+        const tl = gsap.timeline({
+          scrollTrigger: {
+            trigger: item,
+            start: "top 95%", 
+            end: "bottom center",
+            toggleActions: "play none none reverse"
+          }
         });
-      }
+
+        // Wrapper unmasks
+        tl.fromTo(imgWrapper,
+          { clipPath: "inset(100% 0% 0% 0%)" },
+          { 
+            clipPath: "inset(0% 0% 0% 0%)",
+            duration: 1.2,
+            ease: "expo.out", 
+          }
+        )
+        // Image scales down slightly simultaneously
+        .fromTo(img,
+          { scale: 1.4 },
+          { 
+            scale: 1.1, 
+            duration: 1.4,
+            ease: "power3.out"
+          }, 
+          "<" 
+        )
+        // Text slides up
+        .fromTo(textContent,
+          { y: 40, opacity: 0 },
+          { 
+            y: 0, 
+            opacity: 1,
+            duration: 1,
+            ease: "power3.out"
+          },
+          "-=0.8" 
+        );
+
+
+        // --- 2. Parallax Effect (Scroll Scrub) ---
+        gsap.to(img, {
+          yPercent: 15, 
+          ease: "none",
+          scrollTrigger: {
+            trigger: item,
+            start: "top bottom",
+            end: "bottom top",
+            scrub: true 
+          }
+        });
+
+      });
 
     }, containerRef);
     return () => ctx.revert();
   }, []);
 
-  // Hover Handlers (Desktop Only)
-  const handleMouseEnter = (img) => {
-    setActiveImage(img);
-    gsap.to(cursorRef.current, { scale: 1, opacity: 1, duration: 0.4, ease: "back.out(1.7)" });
-  };
-
-  const handleMouseLeave = () => {
-    setActiveImage(null);
-    gsap.to(cursorRef.current, { scale: 0, opacity: 0, duration: 0.3 });
-  };
-
-  return (
-    <section ref={containerRef} className="relative w-full bg-[#2F3E2F] text-[#E8E6E0] py-20 md:py-32 overflow-hidden cursor-default md:cursor-none">
+  // Reusable Card Component
+  const ProjectCard = ({ item }) => (
+    <div className="gallery-item mb-20 md:mb-40 group cursor-pointer block">
       
-      {/* =========================================
-          DESKTOP FLOATING CURSOR (Hidden on Mobile)
-         ========================================= */}
-      <div 
-        ref={cursorRef} 
-        className="fixed top-0 left-0 w-[300px] h-[400px] rounded-[4px] overflow-hidden pointer-events-none z-50 opacity-0 scale-0 -translate-x-1/2 -translate-y-1/2 hidden md:block shadow-2xl"
-        style={{ border: '1px solid rgba(232, 230, 224, 0.2)' }}
-      >
-        {activeImage && (
-           <img src={activeImage} alt="Preview" className="w-full h-full object-cover" />
-        )}
-        <div className="absolute inset-0 bg-[#2F3E2F]/10 mix-blend-multiply"></div>
+      {/* Image Container */}
+      <div className="img-wrapper relative w-full aspect-[3/4] overflow-hidden mb-8 transform-gpu">
+        <div className="absolute inset-0 bg-[#A3B18A]/10 z-10 opacity-0 group-hover:opacity-100 transition-opacity duration-700"></div>
+        <img 
+          src={item.image} 
+          alt={item.title} 
+          className="w-full h-full object-cover will-change-transform" 
+        />
+        
+        {/* Floating Year Tag - Updated to Nav/Button Style */}
+        <div className="absolute top-4 right-4 z-20 overflow-hidden">
+             <span className="block text-xs font-sans font-medium uppercase tracking-[0.25em] text-[#E8E6E0] bg-[#2F3E2F]/80 backdrop-blur-sm px-3 py-1 rounded-full border border-[#A3B18A]/30">
+               {item.year}
+             </span>
+        </div>
       </div>
 
-      <div className="container mx-auto px-6 md:px-12 relative z-10">
+      {/* Text Content */}
+      <div className="text-content pr-4">
+        <div className="flex items-baseline gap-4 mb-2">
+            {/* Subtitle - Updated to Nav/Button Style */}
+            <span className="text-[#A3B18A] text-xs font-sans font-medium uppercase tracking-[0.25em]">{item.subtitle}</span>
+            <div className="h-[1px] flex-grow bg-[#A3B18A]/30"></div>
+        </div>
         
-        {/* Header */}
-        <div className="flex flex-col md:flex-row justify-between items-end mb-16 md:mb-20 border-b border-[#E8E6E0]/20 pb-8">
+        {/* Title - Updated to H3 Style (Playfair, Medium) */}
+        <h3 className="text-4xl md:text-5xl font-serif font-medium mb-4 group-hover:text-[#A3B18A] transition-colors duration-300">
+          {item.title}
+        </h3>
+        
+        {/* Description - Updated to Body Style (Inter, 16px, Normal) */}
+        <p className="text-[#E8E6E0]/60 font-sans text-base font-normal max-w-[90%] leading-relaxed">
+          {item.description}
+        </p>
+      </div>
+    </div>
+  );
+
+  return (
+    // Applied global font-sans (Inter)
+    <section ref={containerRef} className="w-full bg-[#2F3E2F] text-[#E8E6E0] py-24 md:py-32 font-sans">
+      
+      <div className="max-w-[90vw] md:max-w-[85vw] mx-auto">
+        
+        {/* --- Header --- */}
+        <div className="mb-24 md:mb-40 flex flex-col md:flex-row md:items-end justify-between gap-8 border-b border-[#E8E6E0]/10 pb-12">
            <div>
-              <p className="text-[#A3B18A] uppercase tracking-[0.3em] text-xs font-bold mb-4">Selected Works</p>
-              <h2 className="text-5xl md:text-7xl font-serif leading-none">
-                Index <span className="text-[#A3B18A] italic">&</span> Archive
+              {/* Tag - Updated to Nav/Button Style */}
+              <p className="text-[#A3B18A] font-sans font-medium uppercase tracking-[0.25em] text-xs mb-4">Selected Works</p>
+              
+              {/* H2 - Updated to Playfair, Medium */}
+              <h2 className="text-6xl md:text-8xl font-serif font-medium leading-[0.9]">
+                Visual <span className="text-[#A3B18A] italic">Poetry</span>
               </h2>
            </div>
-           <p className="text-[#E8E6E0]/60 text-sm md:text-base max-w-xs mt-6 md:mt-0 font-light">
-             Explore our latest editorial & commercial projects.
+           
+           {/* Description - Updated to Body Style */}
+           <p className="text-[#E8E6E0]/50 font-sans text-base font-normal leading-relaxed max-w-sm text-sm md:text-right pb-2">
+             A curation of moments, architecture, and human connection captured through the lens.
            </p>
         </div>
 
-        {/* =========================================
-            DESKTOP LAYOUT (The Hover List)
-           ========================================= */}
-        <div className="hidden md:flex flex-col">
-          {projects.map((project, index) => (
-            <div 
-              key={project.id}
-              className="group relative flex items-center justify-between py-12 border-b border-[#E8E6E0]/10 transition-colors duration-300 hover:bg-[#E8E6E0]/5 px-8"
-              onMouseEnter={() => handleMouseEnter(project.image)}
-              onMouseLeave={handleMouseLeave}
-            >
-               <div className="flex items-baseline gap-16">
-                  <span className="text-[#A3B18A] font-mono text-sm">0{index + 1}</span>
-                  <h3 className="text-6xl font-serif text-[#E8E6E0] group-hover:translate-x-4 transition-transform duration-500 ease-out">
-                    {project.title}
-                  </h3>
-               </div>
-               <div className="flex items-center gap-16 opacity-50 group-hover:opacity-100 transition-opacity duration-300">
-                  <span className="text-xs uppercase tracking-widest text-[#E8E6E0]">{project.category}</span>
-                  <span className="text-xs font-mono text-[#A3B18A]">{project.year}</span>
-                  <ArrowUpRight className="w-5 h-5 text-[#E8E6E0] group-hover:rotate-45 transition-transform duration-300" />
-               </div>
-            </div>
-          ))}
-        </div>
+        {/* --- Staggered Grid Layout --- */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-24 w-full">
+          
+          {/* Left Column */}
+          <div className="flex flex-col">
+            {leftColumn.map(item => <ProjectCard key={item.id} item={item} />)}
+          </div>
 
-        {/* =========================================
-            MOBILE LAYOUT (The Stacked Cards)
-           ========================================= */}
-        <div className="md:hidden flex flex-col gap-12">
-          {projects.map((project, index) => (
-             <div 
-               key={project.id} 
-               ref={el => mobileCardsRef.current[index] = el}
-               className="w-full flex flex-col gap-4"
-             >
-                {/* 1. Visible Image Card */}
-                <div className="relative w-full aspect-[4/3] overflow-hidden rounded-[2px] bg-[#E8E6E0]/5">
-                   <img 
-                     src={project.image} 
-                     alt={project.title} 
-                     className="w-full h-full object-cover opacity-90"
-                   />
-                   {/* Overlay */}
-                   <div className="absolute inset-0 bg-gradient-to-t from-[#2F3E2F] via-transparent to-transparent opacity-60"></div>
-                   
-                   {/* Category Badge */}
-                   <div className="absolute top-4 left-4 bg-[#2F3E2F]/80 backdrop-blur-md px-3 py-1 rounded-full border border-[#E8E6E0]/20">
-                      <span className="text-[#A3B18A] text-[10px] uppercase tracking-widest font-bold">{project.category}</span>
-                   </div>
-                </div>
+          {/* Right Column - Starts lower */}
+          <div className="flex flex-col md:mt-40">
+            {rightColumn.map(item => <ProjectCard key={item.id} item={item} />)}
+          </div>
 
-                {/* 2. Text Content (Below Image) */}
-                <div className="flex justify-between items-start px-1">
-                   <div>
-                      <span className="text-[#A3B18A] font-mono text-xs mb-1 block">0{index + 1}</span>
-                      <h3 className="text-3xl font-serif text-[#E8E6E0] leading-tight mb-2">{project.title}</h3>
-                      <p className="text-[#E8E6E0]/50 text-xs uppercase tracking-wider">{project.year}</p>
-                   </div>
-                   
-                   <button className="p-3 border border-[#E8E6E0]/20 rounded-full text-[#E8E6E0] mt-2">
-                      <ArrowUpRight size={20} />
-                   </button>
-                </div>
-             </div>
-          ))}
-        </div>
-
-        {/* Footer / More Link */}
-        <div className="flex justify-center mt-20 md:mt-32">
-           <button className="px-8 py-4 rounded-full border border-[#E8E6E0]/30 text-[#E8E6E0] uppercase text-xs font-bold tracking-widest hover:bg-[#E8E6E0] hover:text-[#2F3E2F] transition-all duration-300">
-             View All Projects
-           </button>
         </div>
 
       </div>
@@ -213,4 +201,4 @@ const InteractiveListSection = () => {
   );
 };
 
-export default InteractiveListSection;
+export default ModernWorkSection;
