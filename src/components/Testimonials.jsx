@@ -30,21 +30,29 @@ const ModernTestimonials = () => {
   const col2 = testimonials.slice(4, 8);
 
   return (
-    <section ref={containerRef} className="bg-[#2F3E2F] py-20 px-4 md:px-12 w-full overflow-hidden">
+    // Applied global font-sans (Inter)
+    <section ref={containerRef} className="bg-[#2F3E2F] py-24 px-6 md:px-12 w-full overflow-hidden font-sans">
       
-      {/* Header */}
-      <div className="container mx-auto mb-12 md:mb-20 flex flex-col items-center text-center">
-         <div className="flex items-center gap-3 mb-4 md:mb-6">
-            <span className="w-1.5 h-1.5 md:w-2 md:h-2 rounded-full bg-[#A3B18A] animate-pulse"></span>
-            <span className="text-[#A3B18A] uppercase tracking-[0.2em] text-[10px] md:text-xs font-bold">Feedback</span>
-         </div>
-         <h2 className="text-4xl md:text-8xl font-serif text-[#E8E6E0] leading-none">
-            Voices of <span className="italic text-[#A3B18A]">Trust</span>
-         </h2>
+      {/* --- HEADER (Left Aligned with Underline) --- */}
+      <div className="max-w-6xl mx-auto mb-16 md:mb-24 flex flex-col items-start text-left">
+          
+          {/* Label - Updated to Nav/Button Style */}
+          <span className="text-[#A3B18A] font-sans font-medium text-xs uppercase tracking-[0.25em] mb-4">
+             Feedback
+          </span>
+          
+          {/* Main Title - Updated to Playfair Medium */}
+          <h2 className="text-4xl md:text-6xl font-serif font-medium text-[#E8E6E0] leading-[0.95] mb-8">
+            Voices of <span className="italic text-[#A3B18A]">Trust.</span>
+          </h2>
+
+          {/* Cinematic Separator Line */}
+          <div className="w-full h-[1px] bg-[#E8E6E0]/10"></div>
       </div>
 
       {/* --- DESKTOP LAYOUT (Scroll Parallax) --- */}
       <div className="hidden md:grid grid-cols-2 gap-8 max-w-6xl mx-auto h-[800px] overflow-hidden relative">
+         {/* Gradients */}
          <div className="absolute top-0 left-0 w-full h-32 bg-gradient-to-b from-[#2F3E2F] to-transparent z-10 pointer-events-none"></div>
          <div className="absolute bottom-0 left-0 w-full h-32 bg-gradient-to-t from-[#2F3E2F] to-transparent z-10 pointer-events-none"></div>
 
@@ -56,21 +64,16 @@ const ModernTestimonials = () => {
          </motion.div>
       </div>
 
-      {/* --- MOBILE LAYOUT (Vertical Marquee / Auto-Scroll) --- */}
-      {/* This creates a 2-column "Wall" that scrolls automatically */}
-      <div className="md:hidden relative h-[500px] overflow-hidden">
-         
-         {/* Gradients to hide edges */}
-         <div className="absolute top-0 left-0 w-full h-20 bg-gradient-to-b from-[#2F3E2F] to-transparent z-20 pointer-events-none"></div>
-         <div className="absolute bottom-0 left-0 w-full h-20 bg-gradient-to-t from-[#2F3E2F] to-transparent z-20 pointer-events-none"></div>
+      {/* --- MOBILE LAYOUT (Vertical Marquee) --- */}
+      <div className="md:hidden relative h-[600px] overflow-hidden">
+         <div className="absolute top-0 left-0 w-full h-24 bg-gradient-to-b from-[#2F3E2F] to-transparent z-20 pointer-events-none"></div>
+         <div className="absolute bottom-0 left-0 w-full h-24 bg-gradient-to-t from-[#2F3E2F] to-transparent z-20 pointer-events-none"></div>
 
          <div className="grid grid-cols-2 gap-3">
-            
-            {/* Left Column - Upward Scroll */}
-            <div className="h-[500px] overflow-hidden">
+            <div className="h-[600px] overflow-hidden">
                <motion.div 
                   animate={{ y: [0, -1000] }} 
-                  transition={{ repeat: Infinity, duration: 20, ease: "linear" }}
+                  transition={{ repeat: Infinity, duration: 25, ease: "linear" }}
                   className="flex flex-col gap-3"
                >
                   {[...col1, ...col1, ...col1].map((item, i) => (
@@ -79,11 +82,10 @@ const ModernTestimonials = () => {
                </motion.div>
             </div>
 
-            {/* Right Column - Downward Scroll */}
-            <div className="h-[500px] overflow-hidden">
+            <div className="h-[600px] overflow-hidden">
                <motion.div 
                   animate={{ y: [-1000, 0] }} 
-                  transition={{ repeat: Infinity, duration: 25, ease: "linear" }}
+                  transition={{ repeat: Infinity, duration: 30, ease: "linear" }}
                   className="flex flex-col gap-3"
                >
                   {[...col2, ...col2, ...col2].map((item, i) => (
@@ -91,7 +93,6 @@ const ModernTestimonials = () => {
                   ))}
                </motion.div>
             </div>
-
          </div>
       </div>
 
@@ -109,14 +110,17 @@ const ReviewCard = ({ data }) => {
              {[...Array(5)].map((_, i) => <Star key={i} size={12} className="fill-[#A3B18A] text-[#A3B18A]" />)}
           </div>
        </div>
-       <p className="text-[#E8E6E0] text-xl font-serif leading-relaxed mb-8 opacity-90">"{data.quote}"</p>
+       {/* Quote - Serif for Editorial Feel */}
+       <p className="text-[#E8E6E0] text-xl font-serif font-medium leading-relaxed mb-8 opacity-90">"{data.quote}"</p>
        <div className="flex items-center gap-4">
-          <div className="w-10 h-10 rounded-full bg-[#E8E6E0]/10 flex items-center justify-center text-[#E8E6E0] font-bold">
+          <div className="w-10 h-10 rounded-full bg-[#E8E6E0]/10 flex items-center justify-center text-[#E8E6E0] font-bold font-sans">
              {data.name.charAt(0)}
           </div>
           <div>
-             <h4 className="text-[#E8E6E0] font-bold text-sm uppercase tracking-wide">{data.name}</h4>
-             <p className="text-[#E8E6E0]/40 text-xs font-mono">{data.role}</p>
+             {/* Name - Nav/Button Style */}
+             <h4 className="text-[#E8E6E0] font-sans font-medium text-xs uppercase tracking-[0.25em]">{data.name}</h4>
+             {/* Role - Body Style */}
+             <p className="text-[#E8E6E0]/40 text-xs font-sans font-normal mt-1">{data.role}</p>
           </div>
        </div>
     </div>
@@ -126,29 +130,26 @@ const ReviewCard = ({ data }) => {
 // --- MOBILE COMPACT CARD ---
 const ReviewCardMobile = ({ data }) => {
    return (
-     <div className="bg-[#1a241a] p-4 rounded-[4px] border border-[#E8E6E0]/5 shadow-lg">
-        {/* Compact Stars */}
-        <div className="flex gap-0.5 mb-2 opacity-60">
-           {[...Array(5)].map((_, i) => <Star key={i} size={8} className="fill-[#A3B18A] text-[#A3B18A]" />)}
-        </div>
-        
-        {/* Compact Text */}
-        <p className="text-[#E8E6E0] text-xs font-serif leading-snug mb-3 opacity-90">
-           "{data.quote}"
-        </p>
- 
-        {/* Minimal Footer */}
-        <div className="flex items-center gap-2">
-           <div className="w-6 h-6 rounded-full bg-[#E8E6E0]/10 flex items-center justify-center text-[#E8E6E0] text-[10px] font-bold">
-              {data.name.charAt(0)}
-           </div>
-           <div className="overflow-hidden">
-              <h4 className="text-[#E8E6E0] font-bold text-[10px] uppercase truncate">{data.name}</h4>
-              <p className="text-[#E8E6E0]/40 text-[8px] font-mono truncate">{data.role}</p>
-           </div>
-        </div>
+     <div className="bg-[#1a241a] p-5 rounded-[4px] border border-[#E8E6E0]/5 shadow-lg">
+       <div className="flex gap-0.5 mb-2 opacity-60">
+          {[...Array(5)].map((_, i) => <Star key={i} size={8} className="fill-[#A3B18A] text-[#A3B18A]" />)}
+       </div>
+       {/* Quote - Serif */}
+       <p className="text-[#E8E6E0] text-xs font-serif font-medium leading-snug mb-3 opacity-90">
+          "{data.quote}"
+       </p>
+       <div className="flex items-center gap-2">
+          <div className="w-6 h-6 rounded-full bg-[#E8E6E0]/10 flex items-center justify-center text-[#E8E6E0] text-[10px] font-bold font-sans">
+             {data.name.charAt(0)}
+          </div>
+          <div className="overflow-hidden">
+             {/* Name - Nav Style Compact */}
+             <h4 className="text-[#E8E6E0] font-sans font-medium text-[10px] uppercase tracking-[0.15em] truncate">{data.name}</h4>
+             <p className="text-[#E8E6E0]/40 text-[8px] font-sans font-normal truncate">{data.role}</p>
+          </div>
+       </div>
      </div>
    );
- };
+};
 
 export default ModernTestimonials;

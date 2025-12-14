@@ -1,83 +1,79 @@
 import React from 'react';
-import { Instagram, Twitter, Linkedin, Mail } from 'lucide-react';
+import { ArrowUpRight } from 'lucide-react';
 
 const SimpleFooter = () => {
+  const currentYear = new Date().getFullYear();
+
   return (
-    <footer className="w-full bg-[#2F3E2F] text-[#E8E6E0] pt-20 pb-10 border-t border-[#E8E6E0]/10">
+    // Applied global font-sans (Inter)
+    <footer className="w-full bg-[#2F3E2F] text-[#E8E6E0] px-4 md:px-12 py-12 md:py-16 border-t border-[#E8E6E0]/10 font-sans">
       
-      <div className="container mx-auto px-6 md:px-12">
+      <div className="flex flex-col gap-12 md:gap-20">
         
-        {/* --- TOP SECTION: GRID --- */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-12 md:gap-8 mb-20">
-           
-           {/* Col 1: Brand & Desc */}
-           <div className="col-span-1 md:col-span-1">
-              <h2 className="text-2xl font-serif font-bold tracking-wide mb-6">JUST-THINGS.</h2>
-              <p className="text-[#E8E6E0]/70 text-sm leading-relaxed max-w-xs mb-8">
-                 Capturing moments, crafting stories, and designing visual narratives that resonate. Based in Kerala, available worldwide.
-              </p>
-              
-              {/* Social Icons */}
-              <div className="flex gap-4">
-                 <a href="#" className="p-2 border border-[#E8E6E0]/20 rounded-full hover:bg-[#E8E6E0] hover:text-[#2F3E2F] transition-all duration-300">
-                    <Instagram size={18} />
-                 </a>
-                 <a href="#" className="p-2 border border-[#E8E6E0]/20 rounded-full hover:bg-[#E8E6E0] hover:text-[#2F3E2F] transition-all duration-300">
-                    <Twitter size={18} />
-                 </a>
-                 <a href="#" className="p-2 border border-[#E8E6E0]/20 rounded-full hover:bg-[#E8E6E0] hover:text-[#2F3E2F] transition-all duration-300">
-                    <Linkedin size={18} />
-                 </a>
-              </div>
-           </div>
-
-           {/* Col 2: Sitemap */}
-           <div>
-              <h4 className="text-[#A3B18A] text-xs uppercase tracking-widest font-bold mb-6">Sitemap</h4>
-              <ul className="space-y-4">
-                 {['Home', 'Portfolio', 'Services', 'About'].map((item) => (
-                    <li key={item}>
-                       <a href="#" className="text-sm hover:text-[#A3B18A] transition-colors">{item}</a>
-                    </li>
-                 ))}
-              </ul>
-           </div>
-
-           {/* Col 3: Services */}
-           <div>
-              <h4 className="text-[#A3B18A] text-xs uppercase tracking-widest font-bold mb-6">Services</h4>
-              <ul className="space-y-4">
-                 {['Photography', 'Videography', 'Editing', 'Drone Shots'].map((item) => (
-                    <li key={item}>
-                       <a href="#" className="text-sm hover:text-[#A3B18A] transition-colors">{item}</a>
-                    </li>
-                 ))}
-              </ul>
-           </div>
-
-           {/* Col 4: Contact */}
-           <div>
-              <h4 className="text-[#A3B18A] text-xs uppercase tracking-widest font-bold mb-6">Contact</h4>
-              <div className="flex flex-col gap-4">
-                 <a href="mailto:hello@just-things.com" className="text-xl font-serif hover:text-[#A3B18A] transition-colors">
-                    hello@just-things.com
-                 </a>
-                 <p className="text-[#E8E6E0]/60 text-sm">
-                    +91 98765 43210 <br/>
-                    Dubai, UAE
-                 </p>
-              </div>
-           </div>
-
+        {/* --- 1. MAIN ACTION --- */}
+        <div className="flex flex-col gap-4">
+           {/* Label - Nav Style */}
+           <span className="text-[#A3B18A] font-sans font-medium uppercase tracking-[0.25em] text-xs pl-1">
+              Start a project
+           </span>
+           <a 
+             href="mailto:hello@just-things.com" 
+             className="group flex items-start md:items-center gap-2 md:gap-6 w-fit"
+           >
+             {/* Email - Playfair Medium */}
+             <h2 className="text-4xl md:text-7xl lg:text-8xl font-serif font-medium leading-none group-hover:text-[#A3B18A] transition-colors duration-500">
+               hello@just-things.com
+             </h2>
+             <ArrowUpRight 
+                size={32} 
+                className="text-[#A3B18A] opacity-0 -translate-x-4 translate-y-4 group-hover:opacity-100 group-hover:translate-x-0 group-hover:translate-y-0 transition-all duration-500 hidden md:block" 
+             />
+           </a>
         </div>
 
-        {/* --- BOTTOM SECTION: COPYRIGHT --- */}
-        <div className="border-t border-[#E8E6E0]/10 pt-8 flex flex-col md:flex-row justify-between items-center text-xs text-[#E8E6E0]/40 uppercase tracking-widest">
-           <p>© {new Date().getFullYear()} Just Things. All Rights Reserved.</p>
-           <div className="flex gap-8 mt-4 md:mt-0">
-              <a href="#" className="hover:text-[#E8E6E0] transition-colors">Privacy Policy</a>
-              <a href="#" className="hover:text-[#E8E6E0] transition-colors">Terms of Use</a>
+        {/* --- 2. INFO GRID --- */}
+        {/* All text here uses Nav Style (Inter, Medium, Uppercase, Tracking) */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-8 md:gap-0 border-t border-[#E8E6E0]/10 pt-8 text-xs font-sans font-medium uppercase tracking-[0.25em] text-[#E8E6E0]/60">
+           
+           {/* Copyright */}
+           <div className="flex flex-col gap-2">
+              <span className="text-[#E8E6E0]">Just-Things © {currentYear}</span>
+              <span>All Rights Reserved</span>
            </div>
+
+           {/* Location */}
+           <div className="flex flex-col gap-2">
+              <span className="text-[#E8E6E0]">Based In</span>
+              <span>Dubai, UAE / Kerala, IND</span>
+           </div>
+
+           {/* Socials */}
+           <div className="flex flex-col gap-2">
+              <span className="text-[#E8E6E0]">Socials</span>
+              <div className="flex gap-4">
+                 <a href="#" className="hover:text-[#A3B18A] transition-colors">Instagram</a>
+                 <a href="#" className="hover:text-[#A3B18A] transition-colors">Twitter</a>
+                 <a href="#" className="hover:text-[#A3B18A] transition-colors">LinkedIn</a>
+              </div>
+           </div>
+
+           {/* Back to Top */}
+           <div className="md:text-right flex md:block flex-col gap-2">
+               <button 
+                 onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+                 className="hover:text-[#A3B18A] transition-colors text-left md:text-right"
+               >
+                 Back to Top ↑
+               </button>
+           </div>
+        </div>
+
+        {/* --- 3. DEVELOPER CREDIT --- */}
+        <div className="w-full flex flex-col md:flex-row justify-center md:justify-between items-center gap-2 pt-6 border-t border-[#E8E6E0]/5 text-[10px] font-sans font-medium uppercase tracking-[0.25em] text-[#E8E6E0]/30">
+            <span>
+               Designed & Developed by <a href="#" className="hover:text-[#A3B18A] transition-colors">Vynx Software Solutions</a>
+            </span>
+            <span className="hidden md:block">Est. 2025</span>
         </div>
 
       </div>
